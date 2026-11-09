@@ -1,6 +1,6 @@
 # Personal Portfolio
 
-An ultra-clean, high-performance portfolio website built with **Next.js 15 App Router**, **TypeScript**, **Tailwind CSS v4**, **lucide-react**, and **next/font**. Grounded exclusively in verified curriculum vitae facts.
+An ultra-clean, high-performance portfolio website built with **Next.js 15 App Router**, **TypeScript**, **Tailwind CSS v4**, **lucide-react**, and **next/font**.
 
 ---
 
