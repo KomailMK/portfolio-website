@@ -1,7 +1,5 @@
 "use client";
-
 import React, { type ReactNode } from "react";
-
 const skills = [
   {
     group: "Build",
@@ -20,7 +18,6 @@ const skills = [
     items: "Cross-functional collaboration · Research · Technical reporting · Agile",
   },
 ];
-
 const principles = [
   {
     number: "01",
@@ -43,7 +40,6 @@ const principles = [
     body: "Pair practical engineering with careful experimentation and evaluation.",
   },
 ];
-
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <p className="section-label" data-build="type">
@@ -52,7 +48,6 @@ function SectionLabel({ children }: { children: ReactNode }) {
     </p>
   );
 }
-
 export default function AboutSection() {
   return (
     <section className="about-section" id="about" aria-labelledby="about-heading">
@@ -90,7 +85,6 @@ export default function AboutSection() {
             </div>
           </div>
         </div>
-
         <div className="principles-panel">
           <div className="subsection-title" data-build="type">
             <span>WHAT I BELIEVE</span>
