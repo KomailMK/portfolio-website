@@ -1,5 +1,4 @@
 "use client";
-
 import React, { type ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
 
@@ -7,7 +6,6 @@ interface ProjectLink {
   label: string;
   url: string;
 }
-
 interface Project {
   index: string;
   title: string;
@@ -17,7 +15,6 @@ interface Project {
   stack: string[];
   link?: ProjectLink;
 }
-
 const projects: Project[] = [
   {
     index: "01",
@@ -100,7 +97,6 @@ const projects: Project[] = [
     },
   },
 ];
-
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <p className="section-label" data-build="type">
@@ -109,7 +105,6 @@ function SectionLabel({ children }: { children: ReactNode }) {
     </p>
   );
 }
-
 export default function WorkSection() {
   return (
     <section className="section work-section" id="work" aria-labelledby="work-heading">
@@ -139,7 +134,6 @@ export default function WorkSection() {
           </div>
         </div>
       </div>
-
       <div className="project-list">
         {projects.map((project) => (
           <article className="project-card" key={project.index}>
@@ -151,7 +145,6 @@ export default function WorkSection() {
               <div className="project-title-wrap">
                 <p className="project-category" data-build="type">{project.category}</p>
                 <h3 data-build="type">{project.title}</h3>
-
                 {project.link && (
                   <div className="mt-4" data-build="pop">
                     <a
