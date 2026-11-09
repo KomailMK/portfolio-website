@@ -1,13 +1,10 @@
 "use client";
-
 import React from "react";
 import { AgentCursor } from "@/lib/types";
-
 interface RobotCursorProps {
   agent: AgentCursor;
   scale?: number;
 }
-
 export default function RobotCursor({ agent, scale = 1 }: RobotCursorProps) {
   return (
     <div
@@ -23,7 +20,6 @@ export default function RobotCursor({ agent, scale = 1 }: RobotCursorProps) {
           style={{ borderColor: agent.color }}
         />
       )}
-
       {/* Top Left Cursor Pointer Arrow */}
       <svg
         width="20"
@@ -44,7 +40,6 @@ export default function RobotCursor({ agent, scale = 1 }: RobotCursorProps) {
           strokeLinejoin="round"
         />
       </svg>
-
       {/* Floating Name Tag with Robot Head */}
       <div
         className="absolute top-3.5 left-3.5 flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-mono shadow-2xl backdrop-blur-md whitespace-nowrap border select-none transition-all duration-150"
