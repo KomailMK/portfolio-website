@@ -1,9 +1,7 @@
 "use client";
-
 import React from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowDownRight, ArrowUpRight } from "lucide-react";
-
 export default function HeroSection() {
   return (
     <header className="hero pt-16 sm:pt-20" id="top">

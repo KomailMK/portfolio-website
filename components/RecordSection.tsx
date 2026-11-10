@@ -1,8 +1,6 @@
 "use client";
-
 import React, { type ReactNode } from "react";
 import { Sparkles } from "lucide-react";
-
 const experience = [
   {
     period: "Jun 2026 — Present",
@@ -35,7 +33,6 @@ const experience = [
     ],
   },
 ];
-
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <p className="section-label" data-build="type">
@@ -44,7 +41,6 @@ function SectionLabel({ children }: { children: ReactNode }) {
     </p>
   );
 }
-
 export default function RecordSection() {
   return (
     <section className="section record-section" id="record" aria-labelledby="record-heading">
@@ -62,7 +58,6 @@ export default function RecordSection() {
           <Sparkles size={24} strokeWidth={1.2} />
         </span>
       </div>
-
       <div className="timeline">
         {experience.map((item, index) => (
           <article className="timeline-entry" key={item.role}>
@@ -80,7 +75,6 @@ export default function RecordSection() {
             </div>
           </article>
         ))}
-
         <article className="timeline-entry">
           <div className="timeline-date" data-build="type">2026</div>
           <span className="timeline-node" data-build="pop" aria-hidden="true" />
@@ -94,7 +88,6 @@ export default function RecordSection() {
             </p>
           </div>
         </article>
-
         <article className="timeline-entry">
           <div className="timeline-date" data-build="type">Jun 2026</div>
           <span className="timeline-node" data-build="pop" aria-hidden="true" />
@@ -108,7 +101,6 @@ export default function RecordSection() {
             <p className="timeline-copy" data-build="type">Graduated · CGPA 3.20 / 4.00</p>
           </div>
         </article>
-
         <article className="timeline-entry">
           <div className="timeline-date" data-build="type">Jul 2022</div>
           <span className="timeline-node" data-build="pop" aria-hidden="true" />

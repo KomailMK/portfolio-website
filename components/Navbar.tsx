@@ -1,8 +1,6 @@
 "use client";
-
 import React, { useState, useEffect, useRef, useCallback, type CSSProperties, type MouseEvent } from "react";
 import { Download, ArrowUpRight } from "lucide-react";
-
 const NAV_LINKS = [
   { name: "Work", href: "#work", index: "01" },
   { name: "Stack", href: "#stack", index: "02" },
@@ -10,17 +8,14 @@ const NAV_LINKS = [
   { name: "About", href: "#about", index: "04" },
   { name: "Contact", href: "#contact", index: "05" },
 ];
-
 function waitForScrollSettle(targetY: number, maxWaitMs = 1100): Promise<void> {
   if (Math.abs(window.scrollY - targetY) <= 4) {
     return Promise.resolve();
   }
-
   return new Promise((resolve) => {
     let settled = false;
     let idleTimer: ReturnType<typeof setTimeout> | undefined;
     let safetyTimer: ReturnType<typeof setTimeout> | undefined;
-
     const finish = () => {
       if (settled) return;
       settled = true;
@@ -30,7 +25,6 @@ function waitForScrollSettle(targetY: number, maxWaitMs = 1100): Promise<void> {
       window.removeEventListener("scroll", onScroll);
       resolve();
     };
-
     const onScroll = () => {
       if (Math.abs(window.scrollY - targetY) <= 4) {
         finish();
@@ -39,24 +33,20 @@ function waitForScrollSettle(targetY: number, maxWaitMs = 1100): Promise<void> {
       if (idleTimer) clearTimeout(idleTimer);
       idleTimer = setTimeout(finish, 110);
     };
-
     window.addEventListener("scrollend", finish, { once: true });
     window.addEventListener("scroll", onScroll, { passive: true });
     idleTimer = setTimeout(finish, 120);
     safetyTimer = setTimeout(finish, maxWaitMs);
   });
 }
-
 async function scrollToYAsync(targetY: number, reducedMotion: boolean): Promise<void> {
   if (Math.abs(window.scrollY - targetY) <= 2) {
     return;
   }
-
   const maybePromise = window.scrollTo({
     top: targetY,
     behavior: reducedMotion ? "auto" : "smooth",
   }) as unknown;
-
   if (maybePromise instanceof Promise) {
     await maybePromise;
     // Guard against Chrome's early Promise resolution on root scroller mid-flight
@@ -65,32 +55,27 @@ async function scrollToYAsync(targetY: number, reducedMotion: boolean): Promise<
     }
     return;
   }
-
   if (!reducedMotion) {
     await waitForScrollSettle(targetY);
   }
 }
-
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeHref, setActiveHref] = useState<string>("#top");
   const [clickedMobileHref, setClickedMobileHref] = useState<string | null>(null);
   const [isTransiting, setIsTransiting] = useState(false);
-
   const headerRef = useRef<HTMLElement>(null);
   const topBarRef = useRef<HTMLDivElement>(null);
   const scrollTokenRef = useRef(0);
   const arrivalTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const activeNavRef = useRef(false);
-
   useEffect(() => {
     document.documentElement.classList.toggle("nav-transiting", isTransiting);
     return () => {
       document.documentElement.classList.remove("nav-transiting");
     };
   }, [isTransiting]);
-
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 24);
@@ -102,16 +87,13 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
   // Scrollspy tracking: native scroll-target-group when supported + IntersectionObserver fallback
   useEffect(() => {
     const sectionIds = ["work", "stack", "record", "about", "contact"];
     const sections = sectionIds
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => Boolean(el));
-
     if (sections.length === 0) return;
-
     const syncFromTargetCurrent = () => {
       const currentLink = document.querySelector<HTMLAnchorElement>(
         "nav.glass-nav-desktop a:target-current"
@@ -121,17 +103,14 @@ export default function Navbar() {
         if (href) setActiveHref(href);
       }
     };
-
     const supportsScrollTargetGroup =
       typeof CSS !== "undefined" &&
       Boolean(CSS.supports?.("scroll-target-group", "auto")) &&
       Boolean(CSS.supports?.("selector(:target-current)"));
-
     if (supportsScrollTargetGroup) {
       syncFromTargetCurrent();
       document.addEventListener("scrollend", syncFromTargetCurrent, { passive: true });
     }
-
     const observer = new IntersectionObserver(
       (entries) => {
         if (activeNavRef.current) return;
@@ -143,9 +122,7 @@ export default function Navbar() {
       },
       { rootMargin: "-35% 0px -50% 0px", threshold: 0 }
     );
-
     sections.forEach((sec) => observer.observe(sec));
-
     return () => {
       observer.disconnect();
       if (supportsScrollTargetGroup) {
@@ -153,40 +130,33 @@ export default function Navbar() {
       }
     };
   }, []);
-
   useEffect(() => {
     if (!mobileMenuOpen) return;
-
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setMobileMenuOpen(false);
       }
     };
-
     const handlePointerDown = (event: PointerEvent) => {
       if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
         setMobileMenuOpen(false);
       }
     };
-
     const mq = window.matchMedia("(min-width: 768px)");
     const handleBreakpoint = (event: MediaQueryListEvent) => {
       if (event.matches) {
         setMobileMenuOpen(false);
       }
     };
-
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("pointerdown", handlePointerDown);
     mq.addEventListener("change", handleBreakpoint);
-
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("pointerdown", handlePointerDown);
       mq.removeEventListener("change", handleBreakpoint);
     };
   }, [mobileMenuOpen]);
-
   const handleNavClick = useCallback(
     async (
       event: MouseEvent<HTMLAnchorElement>,
@@ -195,11 +165,9 @@ export default function Navbar() {
     ) => {
       if (!href.startsWith("#")) return;
       event.preventDefault();
-
       const scrollToken = ++scrollTokenRef.current;
       activeNavRef.current = true;
       setActiveHref(href);
-
       if (fromMobile) {
         setClickedMobileHref(href);
         setTimeout(() => {
@@ -211,16 +179,13 @@ export default function Navbar() {
       } else {
         setMobileMenuOpen(false);
       }
-
       window.dispatchEvent(new CustomEvent("portfolio:navigate", { detail: { href } }));
-
       const targetId = href.slice(1);
       const targetEl = document.getElementById(targetId);
       if (!targetEl) {
         activeNavRef.current = false;
         return;
       }
-
       // Clear previous section arrival highlights
       document.querySelectorAll(".section-nav-arrived").forEach((el) => {
         el.classList.remove("section-nav-arrived");
@@ -228,7 +193,6 @@ export default function Navbar() {
       if (arrivalTimerRef.current) {
         clearTimeout(arrivalTimerRef.current);
       }
-
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const topBarBottom = topBarRef.current
         ? topBarRef.current.getBoundingClientRect().bottom + 12
@@ -247,18 +211,13 @@ export default function Navbar() {
       if (!reducedMotion && Math.abs(window.scrollY - targetY) > 12) {
         setIsTransiting(true);
       }
-
       await scrollToYAsync(targetY, reducedMotion);
-
       if (scrollTokenRef.current !== scrollToken) return;
-
       setIsTransiting(false);
       activeNavRef.current = false;
-
       if (window.location.hash !== href) {
         window.history.replaceState(null, "", href);
       }
-
       if (!reducedMotion) {
         void targetEl.offsetWidth;
         targetEl.classList.add("section-nav-arrived");
@@ -266,7 +225,6 @@ export default function Navbar() {
           targetEl.classList.remove("section-nav-arrived");
         }, 980);
       }
-
       // Move assistive focus without causing a second scroll
       const heading = targetEl.querySelector<HTMLElement>("h1, h2") ?? targetEl;
       if (!heading.hasAttribute("tabindex")) {
@@ -276,7 +234,6 @@ export default function Navbar() {
     },
     []
   );
-
   return (
     <>
       {/* Subtle scrim behind mobile menu drawer for focus & outside-tap dismissal */}
@@ -286,7 +243,6 @@ export default function Navbar() {
         onClick={() => setMobileMenuOpen(false)}
         className="mobile-nav-backdrop md:hidden"
       />
-
       <header
         ref={headerRef}
         className={`glass-navbar ${scrolled ? "is-scrolled" : ""} ${
@@ -312,7 +268,6 @@ export default function Navbar() {
               </span>
             </div>
           </a>
-
           {/* Desktop Nav Links */}
           <nav
             aria-label="Main Navigation"
@@ -332,7 +287,6 @@ export default function Navbar() {
               </a>
             ))}
           </nav>
-
           {/* Right Action: Resume Download & Mobile Hamburger */}
           <div className="flex items-center gap-2.5">
             <a
@@ -343,7 +297,6 @@ export default function Navbar() {
               <Download className="w-3.5 h-3.5 text-[#ff3b2f]" />
               <span>Resume</span>
             </a>
-
             {/* Animated Morphing Hamburger Button */}
             <button
               type="button"
@@ -361,7 +314,6 @@ export default function Navbar() {
             </button>
           </div>
         </div>
-
         {/* Smooth Always-Mounted Frosted Mobile Drawer */}
         <div
           id="mobile-nav-drawer"
@@ -393,7 +345,6 @@ export default function Navbar() {
                   </a>
                 ))}
               </div>
-
               <div
                 style={{ "--nav-idx": NAV_LINKS.length } as CSSProperties}
                 className="mobile-nav-item pt-4"
@@ -411,7 +362,6 @@ export default function Navbar() {
             </nav>
           </div>
         </div>
-
         {/* Photonic glass edge transit beam during smooth navigation */}
         <span className="nav-transit-beam" aria-hidden="true" />
       </header>
