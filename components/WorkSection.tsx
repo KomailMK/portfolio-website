@@ -1,7 +1,6 @@
 "use client";
 import React, { type ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
-
 interface ProjectLink {
   label: string;
   url: string;

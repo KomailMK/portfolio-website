@@ -1,7 +1,5 @@
 "use client";
-
 import React, { type ReactNode } from "react";
-
 const tools = [
   "Python",
   "JavaScript",
@@ -35,7 +33,6 @@ const tools = [
   "Pandas",
   "NumPy",
 ];
-
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <p className="section-label" data-build="type">
@@ -44,7 +41,6 @@ function SectionLabel({ children }: { children: ReactNode }) {
     </p>
   );
 }
-
 export default function StackMarquee() {
   return (
     <section className="stack-section" id="stack" aria-labelledby="stack-heading">
@@ -61,7 +57,6 @@ export default function StackMarquee() {
           </div>
         </div>
       </div>
-
       <div className="marquee-viewport" data-build="pop">
         <div className="marquee-track">
           {[...tools, ...tools].map((tool, index) => (
@@ -74,7 +69,6 @@ export default function StackMarquee() {
           ))}
         </div>
       </div>
-
       <div className="section stack-categories">
         <div className="stack-category">
           <span className="stack-category-label" data-build="type">01 / LANGUAGES</span>
