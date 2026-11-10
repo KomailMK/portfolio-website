@@ -1,5 +1,4 @@
 export type BuildType = "type" | "pop" | "wipe";
-
 export interface AgentCursor {
   id: string;
   name: string;
@@ -16,7 +15,6 @@ export interface AgentCursor {
   clicking: boolean;
   currentElementId: string | null;
 }
-
 export interface WireframeBox {
   id: string;
   agentId: string;
@@ -32,7 +30,6 @@ export interface WireframeBox {
   label: string;
   buildType: BuildType;
 }
-
 export interface BuildableTarget {
   id: string;
   element: HTMLElement;
