@@ -791,7 +791,7 @@ html:not(.build-mode) .boot-loader {
 .section-footnote {
   margin: 17px 0 0;
   color: #69666a;
-  font-size: 10px;
+  font-size: 13px; 
 }
 
 .stack-section {
