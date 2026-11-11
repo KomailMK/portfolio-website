@@ -47,10 +47,10 @@ export default function ContactSection() {
       </div>
 
       <footer className="site-footer">
-        <a className="footer-brand" href="#top" data-build="type">
-          KAK<span className="accent-period">.</span>
-        </a>
-        <span className="footer-note" data-build="type">Software Engineer · Data Science</span>
+        <a className="footer-brand" href="#top" data-build="type">MK</a>
+        <span className="footer-note" data-build="type" style={{ fontSize: '10px', lineHeight: '1.5' }}>
+          Data Science & AI Specialist
+        </span>
         <div className="footer-links" data-build="pop">
           <a
             href="mailto:komikhalils091@gmail.com"
