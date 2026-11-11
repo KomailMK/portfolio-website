@@ -717,6 +717,16 @@ html:not(.build-mode) .boot-loader {
   letter-spacing: -0.045em;
 }
 
+.project-title-wrap h3 a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.project-title-wrap h3 a:hover {
+  color: var(--accent);
+}
+
 .project-detail ul,
 .timeline-points {
   display: grid;
