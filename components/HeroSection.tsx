@@ -38,7 +38,7 @@ export default function HeroSection() {
             Ahmad Khalil<span className="name-period"></span>
           </h1>
           <p className="hero-role" data-build="type">
-            Software Engineer <span className="hero-role-sep">·</span> Data Science
+            Software Engineer <span className="hero-role-sep">·</span> Data Science &amp; AI Specialist
           </p>
           <p className="hero-bio" data-build="type">
             I build full-stack products and applied AI for real-world healthcare
@@ -64,10 +64,10 @@ export default function HeroSection() {
           </p>
           <div className="hero-stat">
             <span className="hero-stat-value" data-build="type">
-              3.20<span>/4.00</span>
+              Software Engineer
             </span>
             <span className="hero-stat-label" data-build="type">
-              Computer Science · Data Science track
+              Khyber College of Dentistry
             </span>
           </div>
           <div className="hero-stat">
