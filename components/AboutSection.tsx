@@ -7,11 +7,11 @@ const skills = [
   },
   {
     group: "Applied AI",
-    items: "Deep learning · Computer vision · NLP · Retrieval-augmented generation",
+    items: "Multimodal fusion architecture · Cross-attention transformers · Retrieval-augmented generation (RAG) · Vision-language model fine-tuning · Large language model distillation",
   },
   {
     group: "Machine learning",
-    items: "Federated learning · Predictive modeling · Model evaluation · ONNX inference",
+    items: "Retrieval-augmented generation (RAG) · Knowledge distillation & compression · Federated learning · Meta-learning & few-shot adaptation",
   },
   {
     group: "Ways of working",
