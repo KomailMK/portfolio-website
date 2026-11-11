@@ -13,6 +13,7 @@ interface Project {
   description: string[];
   stack: string[];
   link?: ProjectLink;
+  titleLink?: string;
 }
 const projects: Project[] = [
   {
@@ -50,6 +51,7 @@ const projects: Project[] = [
   {
     index: "03",
     title: "AI-Based Anemia Detection Application",
+    titleLink: "https://newany.pythonanywhere.com/",
     category: "Healthcare · Applied AI",
     date: "Apr 2025 — Nov 2026",
     description: [
@@ -60,12 +62,13 @@ const projects: Project[] = [
     stack: ["Flask", "ONNX", "Python"],
     link: {
       label: "Diagnostic Pipeline Spec",
-      url: "#contact",
+      url: "https://github.com/KomailMK/anemia-detection-using-machine-learning",
     },
   },
   {
     index: "04",
     title: "Multilingual RAG Application",
+    titleLink: "https://hajj-chatbot-murex.vercel.app/",
     category: "Independent project · Applied AI",
     date: "2026",
     description: [
@@ -76,12 +79,13 @@ const projects: Project[] = [
     stack: ["LLMs", "LangChain", "FastAPI"],
     link: {
       label: "RAG Architecture",
-      url: "#contact",
+      url: "https://github.com/KomailMK/Multilingual-Hajj-Umrah-RAG-Chatbot",
     },
   },
   {
     index: "05",
     title: "Property Hub Pakistan",
+    titleLink: "https://zameensalekpk.vercel.app/",
     category: "Independent project · Full stack",
     date: "2026",
     description: [
@@ -92,7 +96,7 @@ const projects: Project[] = [
     stack: ["MySQL", "OTP Authentication", "Full Stack"],
     link: {
       label: "Platform Case Study",
-      url: "#contact",
+      url: "https://zameensalekpk.vercel.app/",
     },
   },
 ];
@@ -139,11 +143,26 @@ export default function WorkSection() {
             <div className="project-content">
               <div className="project-title-wrap">
                 <p className="project-category" data-build="type">{project.category}</p>
-                <h3 data-build="type">{project.title}</h3>
+                <h3 data-build="type">
+                  {project.titleLink ? (
+                    <a
+                      href={project.titleLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-[#ff3b2f] transition-colors"
+                    >
+                      {project.title}
+                    </a>
+                  ) : (
+                    project.title
+                  )}
+                </h3>
                 {project.link && (
                   <div className="mt-4" data-build="pop">
                     <a
                       href={project.link.url}
+                      target={project.link.url.startsWith("http") ? "_blank" : undefined}
+                      rel={project.link.url.startsWith("http") ? "noopener noreferrer" : undefined}
                       className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono text-zinc-300 hover:text-white bg-zinc-900/60 hover:bg-zinc-800/80 border border-zinc-800 hover:border-[#ff3b2f]/60 rounded-[2px] transition-all duration-200 group shadow-sm"
                     >
                       <span className="text-[#ff3b2f] select-none font-bold group-hover:translate-x-0.5 transition-transform">
