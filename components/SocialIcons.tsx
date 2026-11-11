@@ -1,5 +1,4 @@
 import React from "react";
-
 export function LinkedinIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
     <svg
@@ -12,7 +11,6 @@ export function LinkedinIcon({ className = "w-4 h-4" }: { className?: string }) 
     </svg>
   );
 }
-
 export function GithubIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
     <svg
