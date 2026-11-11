@@ -1,38 +1,5 @@
 "use client";
 import React, { type ReactNode } from "react";
-const tools = [
-  "Python",
-  "JavaScript",
-  "TypeScript",
-  "HTML/CSS",
-  "SQL",
-  "React",
-  "Next.js",
-  "Node.js",
-  "Flask",
-  "FastAPI",
-  "RESTful APIs",
-  "MySQL",
-  "Deep Learning",
-  "Federated Learning",
-  "Vision-Language Models",
-  "YOLOv8",
-  "RAG pipelines",
-  "LangChain",
-  "NLP",
-  "PyTorch",
-  "TensorFlow",
-  "OpenCV",
-  "Scikit-Learn",
-  "ONNX",
-  "Git",
-  "Web Deployment",
-  "Postman",
-  "CI/CD",
-  "Agile Methodologies",
-  "Pandas",
-  "NumPy",
-];
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <p className="section-label" data-build="type">
@@ -57,37 +24,24 @@ export default function StackMarquee() {
           </div>
         </div>
       </div>
-      <div className="marquee-viewport" data-build="pop">
-        <div className="marquee-track">
-          {[...tools, ...tools].map((tool, index) => (
-            <span className="marquee-item" key={`${tool}-${index}`}>
-              <span className="marquee-star" aria-hidden="true">
-                ✳
-              </span>
-              {tool}
-            </span>
-          ))}
-        </div>
-      </div>
       <div className="section stack-categories">
         <div className="stack-category">
           <span className="stack-category-label" data-build="type">01 / LANGUAGES</span>
-          <p data-build="type">Python · JavaScript · TypeScript · HTML/CSS · SQL</p>
+          <p data-build="type">Python · JavaScript · TypeScript · Go (Golang) · Kotlin · Rust · Swift · HTML/CSS · SQL</p>
         </div>
         <div className="stack-category">
           <span className="stack-category-label" data-build="type">02 / WEB</span>
-          <p data-build="type">React · Next.js · Node.js · Flask · FastAPI · RESTful APIs · MySQL</p>
+          <p data-build="type">React · Next.js · Node.js · Flask · FastAPI · Gin / Fiber · Actix-web / Axum · RESTful APIs · MySQL</p>
         </div>
         <div className="stack-category">
           <span className="stack-category-label" data-build="type">03 / AI &amp; ML</span>
           <p data-build="type">
-            Deep Learning · Federated Learning · VLMs · YOLOv8 · RAG · LangChain ·
-            NLP · PyTorch · TensorFlow · OpenCV · Scikit-Learn · ONNX
+            Deep Learning · Federated Learning · VLMs · YOLOv8 · RAG · LangChain · NLP · PyTorch · TensorFlow · OpenCV · Scikit-Learn · ONNX
           </p>
         </div>
         <div className="stack-category">
           <span className="stack-category-label" data-build="type">04 / WORKFLOWS</span>
-          <p data-build="type">Git · Web Deployment · Postman · CI/CD · Agile · Pandas · NumPy</p>
+          <p data-build="type">Git · Web Deployment · Postman · CI/CD · Agile</p>
         </div>
       </div>
     </section>
