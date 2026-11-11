@@ -127,10 +127,6 @@ export default function WorkSection() {
             <span>03</span>
             <small>professional roles</small>
           </div>
-          <div className="work-metric" data-build="type">
-            <span>3.20</span>
-            <small>CGPA / 4.00</small>
-          </div>
         </div>
       </div>
       <div className="project-list">
