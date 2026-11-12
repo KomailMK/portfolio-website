@@ -66,7 +66,7 @@ npm start
 
 ---
 
-## How to Deploy Free on Vercel
+## How to Deploy Free on Vercel.
 
 ### Method A: Deploy via GitHub (Recommended)
 1. Initialize git and commit your files:
