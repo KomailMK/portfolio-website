@@ -3,6 +3,7 @@ import React from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowDownRight, ArrowUpRight } from "lucide-react";
 import SplitText from "./SplitText";
+import TextType from "./TextType";
 export default function HeroSection() {
   const handleEmailClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) {
@@ -109,10 +110,29 @@ export default function HeroSection() {
           <p className="hero-role" data-build="type">
             Software Engineer <span className="hero-role-sep">·</span> Data Science &amp; AI Specialist
           </p>
-          <p className="hero-bio" data-build="type">
-            I build full-stack products and applied AI for real-world healthcare
-            challenges.
-          </p>
+          <TextType
+            as="p"
+            className="hero-bio"
+            text={[
+              "Welcome to my portfolio.\nGood to see you here!",
+              "I build some amazing experiences",
+              "Have fun while exploring",
+            ]}
+            typingSpeed={75}
+            pauseDuration={1500}
+            deletingSpeed={50}
+            deleteMode="backspace"
+            typeEffect="none"
+            mistakes={0}
+            cursorStyle="underscore"
+            cursorGlide
+            showCursor
+            cursorColor="currentColor"
+            prefixColor="currentColor"
+            cursorBlinkDuration={0.5}
+            cursorCharacter="_"
+            prefix=""
+          />
           <div className="hero-actions">
             <a className="button button-primary" href="#work" data-build="pop">
               View work <ArrowDownRight size={16} aria-hidden="true" />
