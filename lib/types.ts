@@ -1,4 +1,6 @@
 export type BuildType = "type" | "pop" | "wipe";
+export type CursorShape = "arrow" | "cross" | "ibeam" | "dup";
+
 export interface AgentCursor {
   id: string;
   name: string;
@@ -11,13 +13,20 @@ export interface AgentCursor {
   targetX: number;
   targetY: number;
   isBuilding: boolean;
-  actionState: string; // e.g. "TARGETING", "DRAGGING BOX", "TYPESETTING", "VERIFIED", "STANDBY"
+  actionState: string;
   clicking: boolean;
   currentElementId: string | null;
-  rotation?: number; // degrees applied around the pointer tip
+  shape?: CursorShape;
+  press?: number;
+  rotation?: number;
   vx?: number;
   vy?: number;
   spin?: number;
+  speed?: number;
+  force?: number;
+  curl?: number;
+  orbit?: number;
+  spinRate?: number;
 }
 export interface WireframeBox {
   id: string;

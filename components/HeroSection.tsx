@@ -158,7 +158,7 @@ export default function HeroSection() {
           <p className="stats-eyebrow" data-build="type">
             A LITTLE CONTEXT
           </p>
-          <div className="hero-stat">
+          <div className="hero-stat" data-build="pop">
             <span className="hero-stat-value" data-build="type">
               Software Engineer
             </span>
@@ -166,13 +166,13 @@ export default function HeroSection() {
               Khyber College of Dentistry
             </span>
           </div>
-          <div className="hero-stat">
+          <div className="hero-stat" data-build="pop">
             <span className="hero-stat-value" data-build="type">DOST</span>
             <span className="hero-stat-label" data-build="type">
               Provincial research support grant
             </span>
           </div>
-          <div className="hero-stat">
+          <div className="hero-stat" data-build="pop">
             <span className="hero-stat-value" data-build="type">2026</span>
             <span className="hero-stat-label" data-build="type">
               Research &amp; engineering

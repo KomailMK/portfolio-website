@@ -110,21 +110,21 @@ export default function StackMarquee() {
         </div>
       </div>
       <div className="section stack-categories">
-        <div className="stack-category">
+        <div className="stack-category" data-build="pop">
           <span className="stack-category-label" data-build="type">01 / LANGUAGES</span>
           <p data-build="type">Python · JavaScript · TypeScript · Go (Golang) · Kotlin · Rust · Swift · HTML/CSS · SQL</p>
         </div>
-        <div className="stack-category">
+        <div className="stack-category" data-build="pop">
           <span className="stack-category-label" data-build="type">02 / WEB</span>
           <p data-build="type">React · Next.js · Node.js · Flask · FastAPI · Gin / Fiber · Actix-web / Axum · RESTful APIs · MySQL</p>
         </div>
-        <div className="stack-category">
+        <div className="stack-category" data-build="pop">
           <span className="stack-category-label" data-build="type">03 / AI &amp; ML</span>
           <p data-build="type">
             Deep Learning · Federated Learning · VLMs · YOLOv8 · RAG · LangChain · NLP · PyTorch · TensorFlow · OpenCV · Scikit-Learn · ONNX
           </p>
         </div>
-        <div className="stack-category">
+        <div className="stack-category" data-build="pop">
           <span className="stack-category-label" data-build="type">04 / WORKFLOWS</span>
           <p data-build="type">Git · Web Deployment · Postman · CI/CD · Agile</p>
         </div>

@@ -107,7 +107,7 @@ export default function AboutSection() {
             </div>
             <div className="skills-grid">
               {skills.map((skill) => (
-                <div className="skill-cell" key={skill.group}>
+                <div className="skill-cell" key={skill.group} data-build="pop">
                   <span data-build="type">{skill.group}</span>
                   <p data-build="type">{skill.items}</p>
                 </div>
@@ -121,7 +121,7 @@ export default function AboutSection() {
             <span className="subsection-rule" aria-hidden="true" />
           </div>
           {principles.map((principle) => (
-            <article className="principle" key={principle.number}>
+            <article className="principle" key={principle.number} data-build="pop">
               <span className="principle-number" data-build="type">{principle.number}</span>
               <div>
                 <h3 data-build="type">{principle.title}</h3>
