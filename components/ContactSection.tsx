@@ -1,8 +1,9 @@
 "use client";
 
 import React, { type ReactNode } from "react";
-import { Mail, Linkedin, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Mail, Linkedin, ArrowUpRight } from "lucide-react";
 import TechText from "./TechText";
+import CrystalizedBall from "./CrystalizedBall";
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
@@ -117,9 +118,33 @@ export default function ContactSection() {
           </a>
         </div>
         <div className="contact-side">
-          <span className="contact-side-mark" data-build="pop" aria-hidden="true">
-            <ArrowDownRight size={52} strokeWidth={0.75} />
-          </span>
+          <div className="contact-side-mark" data-build="pop" aria-hidden="true">
+            <CrystalizedBall
+              preset="plasma"
+              color="#F25BD0"
+              size={0.62}
+              crackle={0.85}
+              fill={0.5}
+              interactive
+              hoverStrength={0.9}
+              strands={6}
+              flares={0.5}
+              glow={0.8}
+              sparks={0.7}
+              particleCount={15000}
+              motion="rise"
+              particleShape="round"
+              depth={0.6}
+              sway={0.5}
+              twinkle={0.5}
+              haze={0.8}
+              dustSpeed={1.65}
+              speed={1}
+              intro
+              paused={false}
+              style={{ width: "100%", height: "100%", position: "relative", overflow: "hidden" }}
+            />
+          </div>
           <span className="contact-location" data-build="type">
             <span className="location-marker" aria-hidden="true" />
             <span>Peshawar, Pakistan</span>
