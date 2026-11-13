@@ -30,12 +30,153 @@ interface ActiveBuildingTask {
   targetWidth: number;
   targetHeight: number;
   progress: number;
-  phase: "glide" | "drag" | "reveal" | "revealing" | "verified" | "done";
+  phase: "glide" | "drag" | "grab" | "carry" | "reveal" | "revealing" | "verified" | "done";
   phaseTimer: number;
   revealDuration: number;
   wireframe: WireframeBox;
   wordElements?: HTMLElement[];
   wordStaggerMs?: number;
+  /** Copy mode: an already-built twin that gets duplicated onto this element */
+  source?: HTMLElement;
+  ghost?: HTMLElement;
+  carryDuration?: number;
+  measureTimer?: number;
+}
+
+interface MeasureLine {
+  id: string;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  gap: number;
+  horizontal: boolean;
+}
+
+const DYNAMIC_CLASSES = new Set(["animate-pop-in", "animate-wipe-in", "build-reveal", "revealed"]);
+const RAD_TO_DEG = 180 / Math.PI;
+/** The arrow SVG naturally points up-left (~ -125deg); add this to a heading to aim it. */
+const ARROW_HEADING_OFFSET = 125;
+
+const cleanClasses = (el: Element | null) =>
+  el ? Array.from(el.classList).filter((c) => !DYNAMIC_CLASSES.has(c)).sort().join(".") : "";
+
+/** Identity used to find "similar divs" inside a section that can be duplicated. */
+function twinKey(el: HTMLElement): { key: string; scope: Element } | null {
+  const own = cleanClasses(el);
+  const parent = el.parentElement;
+  if (!parent) return null;
+  const build = el.getAttribute("data-build") || "pop";
+  if (own) {
+    return {
+      key: `${el.tagName}|${own}|${build}`,
+      scope: el.closest("section, header, footer, aside, nav") || document.body,
+    };
+  }
+  const parentCls = cleanClasses(parent);
+  if (parentCls) {
+    return {
+      key: `${el.tagName}||${parent.tagName}.${parentCls}|${build}`,
+      scope: el.closest("section, header, footer, aside, nav") || document.body,
+    };
+  }
+  // Unclassed siblings (e.g. list items) only match inside the same parent
+  return { key: `${el.tagName}|~|${build}`, scope: parent };
+}
+
+function isOnScreen(rect: DOMRect) {
+  return rect.width > 0 && rect.height > 0 && rect.bottom > -40 && rect.top < window.innerHeight + 40;
+}
+
+function sizeSimilar(a: DOMRect, b: DOMRect) {
+  const w = a.width / Math.max(1, b.width);
+  const h = a.height / Math.max(1, b.height);
+  return w > 0.25 && w < 4 && h > 0.45 && h < 2.2;
+}
+
+function makeGhost(source: HTMLElement, layer: HTMLElement): HTMLElement {
+  const rect = source.getBoundingClientRect();
+  const clone = source.cloneNode(true) as HTMLElement;
+  clone.removeAttribute("id");
+  clone.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));
+  clone.classList.remove("animate-pop-in", "animate-wipe-in");
+  [clone, ...Array.from(clone.querySelectorAll<HTMLElement>("[data-build]"))].forEach((n) => {
+    n.dataset.built = "true";
+    n.style.visibility = "visible";
+  });
+  clone.querySelectorAll(".reveal-word").forEach((w) => w.classList.add("revealed"));
+
+  // Carry the look of the root over (descendants mostly style themselves by class)
+  const cs = getComputedStyle(source);
+  [
+    "color", "font-family", "font-size", "font-weight", "line-height", "letter-spacing",
+    "text-transform", "text-align", "white-space", "background-color", "background-image",
+    "border-top", "border-right", "border-bottom", "border-left", "border-radius",
+    "padding-top", "padding-right", "padding-bottom", "padding-left",
+    "display", "flex-direction", "flex-wrap", "align-items", "justify-content", "gap",
+  ].forEach((p) => clone.style.setProperty(p, cs.getPropertyValue(p)));
+
+  Object.assign(clone.style, {
+    position: "fixed",
+    left: "0px",
+    top: "0px",
+    margin: "0px",
+    width: `${rect.width}px`,
+    height: `${rect.height}px`,
+    boxSizing: "border-box",
+    overflow: "hidden",
+    pointerEvents: "none",
+    opacity: "0.78",
+    outline: "1.5px dashed #38bdf8",
+    outlineOffset: "3px",
+    boxShadow: "0 18px 40px -18px rgba(56,189,248,0.55)",
+    transform: `translate3d(${rect.left}px, ${rect.top}px, 0)`,
+    willChange: "transform",
+    transition: "none",
+    animation: "none",
+    translate: "none",
+    rotate: "none",
+    scale: "none",
+  } as Partial<CSSStyleDeclaration>);
+  clone.setAttribute("aria-hidden", "true");
+  layer.appendChild(clone);
+  return clone;
+}
+
+function measureGap(a: DOMRect, b: DOMRect, id: string): MeasureLine | null {
+  const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+  const overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+  if (overlapY > 4 && overlapX <= 0) {
+    const left = a.right <= b.left ? a : b;
+    const right = left === a ? b : a;
+    const y = Math.max(a.top, b.top) + overlapY / 2;
+    const gap = right.left - left.right;
+    if (gap < 1 || gap > 700) return null;
+    return { id, x1: left.right, y1: y, x2: right.left, y2: y, gap, horizontal: true };
+  }
+  const top = a.bottom <= b.top ? a : b;
+  const bottom = top === a ? b : a;
+  const gap = bottom.top - top.bottom;
+  if (gap < 1 || gap > 700) return null;
+  const x =
+    overlapX > 4
+      ? Math.max(a.left, b.left) + Math.min(overlapX / 2, 48)
+      : bottom.left + Math.min(bottom.width / 2, 48);
+  return { id, x1: x, y1: top.bottom, x2: x, y2: bottom.top, gap, horizontal: false };
+}
+
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+function lerpAngle(from: number, to: number, f: number) {
+  const diff = ((((to - from) % 360) + 540) % 360) - 180;
+  return from + diff * f;
+}
+
+function discardTasks(tasks: ActiveBuildingTask[]) {
+  tasks.forEach((t) => {
+    t.ghost?.remove();
+    t.ghost = undefined;
+  });
 }
 
 /**
@@ -120,6 +261,20 @@ export default function CursorOrchestrator({ children }: { children: React.React
   const cursorsRef = useRef<AgentCursor[]>([]);
   const [renderCursors, setRenderCursors] = useState<AgentCursor[]>([]);
   const [renderWireframes, setRenderWireframes] = useState<WireframeBox[]>([]);
+  const [renderMeasures, setRenderMeasures] = useState<MeasureLine[]>([]);
+  const ghostLayerRef = useRef<HTMLDivElement | null>(null);
+
+  // Post-build formation: ring of pointers that trails the user's cursor
+  const mouseRef = useRef({ x: 0, y: 0, t: 0, has: false });
+  const formationRef = useRef({
+    cx: 0,
+    cy: 0,
+    angle: 0,
+    radius: 78,
+    placed: false,
+    shatterUntil: 0,
+    cooldownUntil: 0,
+  });
 
   const activeTasksRef = useRef<ActiveBuildingTask[]>([]);
   const rAFRef = useRef<number | null>(null);
@@ -222,8 +377,10 @@ export default function CursorOrchestrator({ children }: { children: React.React
       };
     });
 
+    discardTasks(activeTasksRef.current);
     activeTasksRef.current = [];
     setRenderWireframes([]);
+    setRenderMeasures([]);
     cursorsRef.current = newCursors;
     setRenderCursors([...newCursors]);
   }, []);
@@ -257,9 +414,11 @@ export default function CursorOrchestrator({ children }: { children: React.React
           el.style.visibility = "visible";
           el.querySelectorAll(".reveal-word").forEach((w) => w.classList.add("revealed"));
         });
+        discardTasks(activeTasksRef.current);
         activeTasksRef.current = [];
         cursorsRef.current.forEach(releaseCursor);
         setRenderWireframes([]);
+        setRenderMeasures([]);
         setIsTouring(false);
         isTouringRef.current = false;
         window.dispatchEvent(new CustomEvent("portfolio:agentschange", { detail: { enabled: false } }));
@@ -286,9 +445,11 @@ export default function CursorOrchestrator({ children }: { children: React.React
     }
 
     // Release any mid-flight cursors so none stay frozen
+    discardTasks(activeTasksRef.current);
     activeTasksRef.current = [];
     cursorsRef.current.forEach(releaseCursor);
     setRenderWireframes([]);
+    setRenderMeasures([]);
 
     // Reset all targets across page identically to initial build state
     document.querySelectorAll<HTMLElement>("[data-build]").forEach((el) => {
@@ -383,23 +544,52 @@ export default function CursorOrchestrator({ children }: { children: React.React
           return rectA.left - rectB.left;
         });
 
-        while (unassignedVisibleTargets.length > 0) {
+        const busyEls = new Set(activeTasksRef.current.map((t) => t.element));
+
+        for (const targetEl of unassignedVisibleTargets) {
           const idleCursors = cursorsRef.current.filter((c) => !c.isBuilding);
           if (idleCursors.length === 0) break;
 
-          const targetEl = unassignedVisibleTargets.shift();
-          if (!targetEl) break;
-
           const rect = targetEl.getBoundingClientRect();
-          const targetCenterX = rect.left + rect.width * 0.5;
-          const targetCenterY = rect.top + rect.height * 0.5;
+
+          // Look for a similar, already-built element in the same section to duplicate
+          let source: HTMLElement | undefined;
+          const twin = rect.height < window.innerHeight * 0.6 ? twinKey(targetEl) : null;
+          if (twin) {
+            const twins = Array.from(twin.scope.querySelectorAll<HTMLElement>("[data-build]")).filter(
+              (n) => n !== targetEl && twinKey(n)?.key === twin.key
+            );
+            if (twins.length) {
+              let best: HTMLElement | undefined;
+              let bestDist = Infinity;
+              for (const n of twins) {
+                if (n.dataset.built !== "true" || busyEls.has(n)) continue;
+                const r = n.getBoundingClientRect();
+                if (!isOnScreen(r) || !sizeSimilar(r, rect)) continue;
+                const d = Math.hypot(r.left - rect.left, r.top - rect.top);
+                if (d < bestDist) {
+                  bestDist = d;
+                  best = n;
+                }
+              }
+              if (best) {
+                source = best;
+              } else if (twins.some((n) => busyEls.has(n))) {
+                // First twin is still being drawn: wait, then copy it instead of redrawing
+                continue;
+              }
+            }
+          }
+
+          const anchorX = source ? source.getBoundingClientRect().left : rect.left;
+          const anchorY = source ? source.getBoundingClientRect().top : rect.top;
 
           // Pick nearest idle cursor to prevent chaotic cross-screen criss-crossing
           let nearestCursor = idleCursors[0];
           let minDistSq = Infinity;
           for (const candidate of idleCursors) {
-            const dx = candidate.x - targetCenterX;
-            const dy = candidate.y - targetCenterY;
+            const dx = candidate.x - anchorX;
+            const dy = candidate.y - anchorY;
             const distSq = dx * dx + dy * dy;
             if (distSq < minDistSq) {
               minDistSq = distSq;
@@ -410,7 +600,7 @@ export default function CursorOrchestrator({ children }: { children: React.React
           const buildType = (targetEl.getAttribute("data-build") as BuildType) || "pop";
 
           nearestCursor.isBuilding = true;
-          nearestCursor.actionState = "TARGETING";
+          nearestCursor.actionState = source ? "COPYING" : "TARGETING";
           nearestCursor.clicking = false;
           nearestCursor.currentElementId = targetEl.id || `target-${Math.random()}`;
 
@@ -426,9 +616,10 @@ export default function CursorOrchestrator({ children }: { children: React.React
             targetWidth: targetW,
             targetHeight: targetH,
             progress: 0,
-            phase: "glide",
+            phase: source ? "grab" : "glide",
             phaseTimer: 0,
             revealDuration: 0.45,
+            source,
             wireframe: {
               id: `wire-${nearestCursor.id}-${Date.now()}`,
               agentId: nearestCursor.id,
@@ -441,28 +632,32 @@ export default function CursorOrchestrator({ children }: { children: React.React
               currentWidth: 0,
               currentHeight: 0,
               progress: 0,
-              label: `[${nearestCursor.name.toUpperCase()}] ${Math.round(targetW)} × ${Math.round(targetH)}px`,
+              label: `${Math.round(targetW)} × ${Math.round(targetH)}`,
               buildType,
             },
           };
 
           activeTasksRef.current.push(task);
+          busyEls.add(targetEl);
         }
 
         // =========================================================================
         // C. UPDATE ACTIVE TASKS & WIREFRAMES
         // =========================================================================
         const updatedWireframes: WireframeBox[] = [];
+        const updatedMeasures: MeasureLine[] = [];
         const finishedIndices: number[] = [];
 
         activeTasksRef.current.forEach((task, idx) => {
           const cursor = cursorsRef.current.find((c) => c.id === task.agentId);
           if (!cursor) {
+            task.ghost?.remove();
             finishedIndices.push(idx);
             return;
           }
 
           if (!task.element.isConnected) {
+            task.ghost?.remove();
             finishedIndices.push(idx);
             releaseCursor(cursor);
             return;
@@ -482,6 +677,8 @@ export default function CursorOrchestrator({ children }: { children: React.React
             currentRect.top > window.innerHeight + 120;
 
           if (isFarOffscreen) {
+            task.ghost?.remove();
+            task.ghost = undefined;
             if (task.phase === "revealing" || task.phase === "verified") {
               task.element.querySelectorAll(".reveal-word").forEach((w) => w.classList.add("revealed"));
             }
@@ -496,7 +693,64 @@ export default function CursorOrchestrator({ children }: { children: React.React
           task.wireframe.width = targetW;
           task.wireframe.height = targetH;
 
-          if (task.phase === "glide") {
+          if (task.measureTimer && task.measureTimer > 0) {
+            task.measureTimer -= dt;
+            if (task.source?.isConnected) {
+              const line = measureGap(task.source.getBoundingClientRect(), currentRect, task.wireframe.id);
+              if (line) updatedMeasures.push(line);
+            }
+          }
+
+          if (task.phase === "grab") {
+            // Copy mode 1/2: reach for the already-built twin
+            const src = task.source;
+            const srcRect = src?.isConnected ? src.getBoundingClientRect() : null;
+            if (!src || !srcRect || !isOnScreen(srcRect)) {
+              task.phase = "glide";
+              task.phaseTimer = 0;
+            } else {
+              task.phaseTimer += dt;
+              cursor.targetX = srcRect.left + srcRect.width * 0.35;
+              cursor.targetY = srcRect.top + srcRect.height * 0.5;
+              cursor.actionState = "COPYING";
+              const near = Math.hypot(cursor.x - cursor.targetX, cursor.y - cursor.targetY) < 8;
+              if ((near && task.phaseTimer >= 0.12) || task.phaseTimer >= 0.45) {
+                const layer = ghostLayerRef.current;
+                if (layer) task.ghost = makeGhost(src, layer);
+                const dist = Math.hypot(srcRect.left - targetLeft, srcRect.top - targetTop);
+                task.carryDuration = Math.min(0.75, Math.max(0.38, dist / 1300));
+                task.phase = "carry";
+                task.phaseTimer = 0;
+                cursor.clicking = true;
+              }
+            }
+          } else if (task.phase === "carry") {
+            // Copy mode 2/2: drag the duplicate over to the empty slot
+            const src = task.source;
+            const srcRect = src?.isConnected ? src.getBoundingClientRect() : currentRect;
+            task.phaseTimer += dt;
+            const t = Math.min(1, task.phaseTimer / (task.carryDuration || 0.5));
+            const e = easeInOutCubic(t);
+            const x = srcRect.left + (targetLeft - srcRect.left) * e;
+            const y = srcRect.top + (targetTop - srcRect.top) * e;
+            const w = srcRect.width + (currentRect.width - srcRect.width) * e;
+            const h = srcRect.height + (currentRect.height - srcRect.height) * e;
+            if (task.ghost) {
+              task.ghost.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${Math.sin(t * Math.PI) * -1.2}deg)`;
+              task.ghost.style.width = `${w}px`;
+              task.ghost.style.height = `${h}px`;
+            }
+            cursor.targetX = x + w * 0.35;
+            cursor.targetY = y + h * 0.5;
+            if (t >= 1) {
+              task.ghost?.remove();
+              task.ghost = undefined;
+              cursor.clicking = false;
+              task.measureTimer = 0.75;
+              task.phase = "reveal";
+              task.phaseTimer = 0;
+            }
+          } else if (task.phase === "glide") {
             task.phaseTimer += dt;
             cursor.targetX = targetLeft;
             cursor.targetY = targetTop;
@@ -518,9 +772,9 @@ export default function CursorOrchestrator({ children }: { children: React.React
             task.wireframe.currentHeight = targetH * easeProgress;
             task.wireframe.progress = task.progress;
 
-            task.wireframe.label = `[${cursor.name.toUpperCase()}] ${Math.round(
-              task.wireframe.currentWidth
-            )} × ${Math.round(task.wireframe.currentHeight)}px`;
+            task.wireframe.label = `${Math.round(task.wireframe.currentWidth)} × ${Math.round(
+              task.wireframe.currentHeight
+            )}`;
 
             updatedWireframes.push(task.wireframe);
 
@@ -625,8 +879,31 @@ export default function CursorOrchestrator({ children }: { children: React.React
         setActiveBuildingCount(activeTasksRef.current.length);
 
         // =========================================================================
-        // D. ACTIVE SCOUTING PHYSICS (FRAMERATE-INDEPENDENT SMOOTH LERP)
+        // D. CURSOR PHYSICS
+        //    Builders lerp to their task targets. Everyone else gathers into a
+        //    rotating ring that trails the user's pointer, shatters when the
+        //    pointer sweeps through it, then springs back into formation.
         // =========================================================================
+        const f = formationRef.current;
+        const isMobileView = window.innerWidth < 768;
+        f.radius = isMobileView ? 56 : 80;
+        const mouse = mouseRef.current;
+        const anchorX = mouse.has ? mouse.x : window.innerWidth * 0.5;
+        const anchorY = mouse.has ? mouse.y : window.innerHeight * 0.62;
+        if (!f.placed) {
+          f.cx = anchorX;
+          f.cy = anchorY;
+          f.placed = true;
+        }
+        const follow = 1 - Math.exp(-dt * 4.2);
+        f.cx += (anchorX - f.cx) * follow;
+        f.cy += (anchorY - f.cy) * follow;
+        f.angle += dt * 0.45;
+
+        const shattered = currentTime < f.shatterUntil;
+        const total = cursorsRef.current.length;
+        const breathe = f.radius * (1 + 0.06 * Math.sin(currentTime * 0.0016));
+
         cursorsRef.current.forEach((c, idx) => {
           if (c.isBuilding) {
             const baseFactor =
@@ -634,24 +911,44 @@ export default function CursorOrchestrator({ children }: { children: React.React
             const lerp = 1 - Math.pow(1 - baseFactor, Math.max(0.25, dt * 60));
             c.x += (c.targetX - c.x) * lerp;
             c.y += (c.targetY - c.y) * lerp;
-          } else {
-            const totalCursors = cursorsRef.current.length;
-            const horizontalSlot = (window.innerWidth / (totalCursors + 1)) * (idx + 1);
-            const timeOffset = currentTime * 0.002 + idx * 1.1;
-
-            const scoutTargetX = horizontalSlot + Math.sin(timeOffset) * 20;
-            const scoutTargetY = window.innerHeight * 0.72 + Math.cos(timeOffset * 1.2) * 16;
-
-            c.actionState = "SCOUTING";
-            c.targetX = scoutTargetX;
-            c.targetY = scoutTargetY;
-
-            const scoutLerp = 1 - Math.pow(1 - 0.12, Math.max(0.25, dt * 60));
-            c.x += (c.targetX - c.x) * scoutLerp;
-            c.y += (c.targetY - c.y) * scoutLerp;
+            c.vx = 0;
+            c.vy = 0;
+            c.rotation = lerpAngle(c.rotation ?? 0, 0, 1 - Math.exp(-dt * 14));
+            return;
           }
+
+          c.actionState = "FORMATION";
+          const slot = f.angle + (idx / total) * Math.PI * 2;
+          const slotX = f.cx + Math.cos(slot) * breathe;
+          const slotY = f.cy + Math.sin(slot) * breathe;
+          c.targetX = slotX;
+          c.targetY = slotY;
+          let vx = c.vx ?? 0;
+          let vy = c.vy ?? 0;
+
+          if (shattered) {
+            // Free flight with drag after the burst
+            const drag = Math.exp(-dt * 2.6);
+            vx *= drag;
+            vy *= drag;
+            c.spin = (c.spin ?? 0) * Math.exp(-dt * 1.8);
+            c.rotation = (c.rotation ?? 0) + (c.spin ?? 0) * dt;
+          } else {
+            // Slightly under-damped spring for a springy re-assembly
+            const k = 70;
+            const damping = 11;
+            vx += (k * (slotX - c.x) - damping * vx) * dt;
+            vy += (k * (slotY - c.y) - damping * vy) * dt;
+            const heading = (slot + Math.PI / 2) * RAD_TO_DEG + ARROW_HEADING_OFFSET;
+            c.rotation = lerpAngle(c.rotation ?? 0, heading, 1 - Math.exp(-dt * 7));
+          }
+          c.x += vx * dt;
+          c.y += vy * dt;
+          c.vx = vx;
+          c.vy = vy;
         });
 
+        setRenderMeasures(updatedMeasures);
         setRenderCursors([...cursorsRef.current]);
       }
 
@@ -660,8 +957,86 @@ export default function CursorOrchestrator({ children }: { children: React.React
 
     rAFRef.current = requestAnimationFrame(loop);
 
+    // Shatter detection: pointer sweeping through the ring breaks it apart
+    const shatter = (hitX: number, hitY: number, pvx: number, pvy: number) => {
+      const f = formationRef.current;
+      const now = performance.now();
+      f.shatterUntil = now + 850;
+      f.cooldownUntil = now + 1500;
+      cursorsRef.current.forEach((c) => {
+        if (c.isBuilding) return;
+        const dx = c.x - hitX;
+        const dy = c.y - hitY;
+        const len = Math.hypot(dx, dy) || 1;
+        const burst = 520 + Math.random() * 520;
+        const jitter = (Math.random() - 0.5) * 0.9;
+        const ax = dx / len;
+        const ay = dy / len;
+        const cos = Math.cos(jitter);
+        const sin = Math.sin(jitter);
+        c.vx = (ax * cos - ay * sin) * burst + pvx * 260;
+        c.vy = (ax * sin + ay * cos) * burst + pvy * 260;
+        c.spin = (Math.random() < 0.5 ? -1 : 1) * (360 + Math.random() * 720);
+      });
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      const m = mouseRef.current;
+      const now = performance.now();
+      const x = e.clientX;
+      const y = e.clientY;
+      if (!m.has) {
+        m.x = x;
+        m.y = y;
+        m.t = now;
+        m.has = true;
+        return;
+      }
+      const elapsed = Math.max(8, now - m.t);
+      const px = m.x;
+      const py = m.y;
+      const vx = (x - px) / elapsed;
+      const vy = (y - py) / elapsed;
+      const speed = Math.hypot(vx, vy); // px per ms
+      m.x = x;
+      m.y = y;
+      m.t = now;
+
+      const f = formationRef.current;
+      if (now < f.cooldownUntil || speed < 0.28) return;
+      const inFormation = cursorsRef.current.filter((c) => !c.isBuilding).length;
+      if (inFormation < Math.max(3, Math.ceil(cursorsRef.current.length / 2))) return;
+
+      // Distance from ring center to the movement segment
+      const sx = x - px;
+      const sy = y - py;
+      const segLenSq = sx * sx + sy * sy || 1;
+      const t = Math.max(0, Math.min(1, ((f.cx - px) * sx + (f.cy - py) * sy) / segLenSq));
+      const nearX = px + sx * t;
+      const nearY = py + sy * t;
+      const dist = Math.hypot(f.cx - nearX, f.cy - nearY);
+      const startedOutside = Math.hypot(px - f.cx, py - f.cy) > f.radius * 0.7;
+      if (dist < f.radius * 0.7 && (startedOutside || speed > 0.9)) {
+        shatter(nearX, nearY, vx, vy);
+      }
+    };
+
+    const onPointerDown = (e: PointerEvent) => {
+      // Taps reposition the anchor without counting as a sweep
+      const m = mouseRef.current;
+      m.x = e.clientX;
+      m.y = e.clientY;
+      m.t = performance.now();
+      m.has = true;
+    };
+
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("pointerdown", onPointerDown, { passive: true });
+
     return () => {
       if (rAFRef.current) cancelAnimationFrame(rAFRef.current);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerdown", onPointerDown);
     };
   }, [booted, agentsEnabled]);
 
@@ -723,6 +1098,39 @@ export default function CursorOrchestrator({ children }: { children: React.React
 
       {booted && agentsEnabled && (
         <div className="pointer-events-none fixed inset-0 z-40 overflow-hidden select-none">
+          <div ref={ghostLayerRef} className="pointer-events-none fixed inset-0" aria-hidden="true" />
+
+          {renderMeasures.map((m) => (
+            <div
+              key={`measure-${m.id}`}
+              className="fixed pointer-events-none"
+              style={
+                m.horizontal
+                  ? { left: `${m.x1}px`, top: `${m.y1}px`, width: `${m.x2 - m.x1}px`, height: "1px", background: "#ff3b2f" }
+                  : { left: `${m.x1}px`, top: `${m.y1}px`, width: "1px", height: `${m.y2 - m.y1}px`, background: "#ff3b2f" }
+              }
+            >
+              <span
+                className="absolute bg-[#ff3b2f]"
+                style={m.horizontal ? { left: 0, top: -4, width: 1, height: 9 } : { top: 0, left: -4, width: 9, height: 1 }}
+              />
+              <span
+                className="absolute bg-[#ff3b2f]"
+                style={m.horizontal ? { right: 0, top: -4, width: 1, height: 9 } : { bottom: 0, left: -4, width: 9, height: 1 }}
+              />
+              <span
+                className="absolute px-1 py-[1px] rounded-[2px] bg-[#ff3b2f] text-[9px] font-mono leading-none text-white whitespace-nowrap"
+                style={
+                  m.horizontal
+                    ? { left: "50%", top: -15, transform: "translateX(-50%)" }
+                    : { top: "50%", left: 6, transform: "translateY(-50%)" }
+                }
+              >
+                {Math.round(m.gap)}
+              </span>
+            </div>
+          ))}
+
           {renderWireframes.map((wire) => (
             <div
               key={wire.id}
@@ -742,9 +1150,8 @@ export default function CursorOrchestrator({ children }: { children: React.React
               <span className="absolute -bottom-1 -left-1 w-2 h-2 bg-[#38bdf8] border border-black shadow" />
               <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-[#38bdf8] border border-black shadow" />
 
-              <div className="absolute -top-5 left-0 px-2 py-0.5 bg-[#09090b] border border-[#38bdf8] text-[10px] font-mono text-[#38bdf8] rounded-sm whitespace-nowrap shadow-md flex items-center gap-1.5 leading-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8] animate-ping" />
-                <span>{wire.label}</span>
+              <div className="absolute -top-5 left-0 px-1.5 py-0.5 bg-[#38bdf8] text-[9px] font-mono text-[#09090b] rounded-sm whitespace-nowrap shadow-md leading-none">
+                {wire.label}
               </div>
             </div>
           ))}

@@ -14,6 +14,10 @@ export interface AgentCursor {
   actionState: string; // e.g. "TARGETING", "DRAGGING BOX", "TYPESETTING", "VERIFIED", "STANDBY"
   clicking: boolean;
   currentElementId: string | null;
+  rotation?: number; // degrees applied around the pointer tip
+  vx?: number;
+  vy?: number;
+  spin?: number;
 }
 export interface WireframeBox {
   id: string;
