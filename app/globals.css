@@ -372,6 +372,9 @@ html:not(.build-mode) .boot-loader {
 }
 
 .handwritten {
+  position: relative;
+  z-index: 5;
+  width: fit-content;
   margin: 0 0 7px;
   color: #e7e1dc;
   font-family: var(--font-caveat-brush), cursive;
@@ -381,7 +384,14 @@ html:not(.build-mode) .boot-loader {
   transform-origin: left center;
 }
 
+.handwritten .split-parent > span {
+  display: inline-block;
+  line-height: 1;
+}
+
 .hero-name {
+  position: relative;
+  z-index: 2;
   margin: 0;
   font-family: var(--font-anton), Impact, sans-serif;
   font-size: clamp(64px, 8.2vw, 119px);
@@ -394,6 +404,21 @@ html:not(.build-mode) .boot-loader {
 
 .hero-name-line {
   display: block;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.hero-name .hero-name-line > span {
+  display: inline-block;
+  line-height: 0.82;
+}
+
+.hero-name .split-char {
+  letter-spacing: 0;
+}
+
+.hero-name .split-char + .split-char {
+  margin-left: -0.045em;
 }
 
 .name-period,
