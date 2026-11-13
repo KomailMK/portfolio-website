@@ -80,6 +80,7 @@ export default function HeroSection() {
               staggerFrom="start"
               trigger="view"
               hoverEffect="lift"
+              touchHover
               loop={false}
               loopDelay={1.5}
               mask={false}
@@ -98,6 +99,7 @@ export default function HeroSection() {
               staggerFrom="start"
               trigger="view"
               hoverEffect="lift"
+              touchHover
               loop={false}
               loopDelay={1.5}
               mask={false}

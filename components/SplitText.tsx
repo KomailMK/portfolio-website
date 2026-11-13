@@ -30,6 +30,7 @@ export interface SplitTextProps {
   loop?: boolean;
   loopDelay?: number;
   hoverEffect?: 'none' | 'lift' | 'wave';
+  touchHover?: boolean;
   color?: string;
   accentColor?: string;
   onLetterAnimationComplete?: () => void;
@@ -105,6 +106,7 @@ const SplitText = ({
   loop = false,
   loopDelay = 1.5,
   hoverEffect = 'none',
+  touchHover = false,
   color,
   accentColor,
   onLetterAnimationComplete
@@ -112,13 +114,13 @@ const SplitText = ({
   const ref = useRef<HTMLParagraphElement>(null);
   const completedTextRef = useRef<string | null>(null);
   const onCompleteRef = useRef(onLetterAnimationComplete);
-  const liveRef = useRef({ trigger, hoverEffect, accentColor });
+  const liveRef = useRef({ trigger, hoverEffect, touchHover, accentColor });
   const [fontsLoaded, setFontsLoaded] = useState(fontsAreLoaded);
   const [ready, setReady] = useState(false);
 
   useIsoLayoutEffect(() => {
     onCompleteRef.current = onLetterAnimationComplete;
-    liveRef.current = { trigger, hoverEffect, accentColor };
+    liveRef.current = { trigger, hoverEffect, touchHover, accentColor };
   });
 
   useEffect(() => {
@@ -390,9 +392,38 @@ const SplitText = ({
       setReady(true);
       if (revealed) queue();
 
+      let touchActive = false;
+
+      const onPointerDown = (e: PointerEvent) => {
+        if (e.pointerType !== 'touch' || !liveRef.current.touchHover) return;
+        touchActive = true;
+        onEnter(e);
+      };
+
+      const onTouchMovePointer = (e: PointerEvent) => {
+        if (e.pointerType === 'touch' && !liveRef.current.touchHover) return;
+        onMove(e);
+      };
+
+      const onPointerEnd = (e: PointerEvent) => {
+        if (e.pointerType !== 'touch' || !touchActive) return;
+        touchActive = false;
+        onLeave();
+      };
+
+      const onContextMenu = (e: MouseEvent) => {
+        if (touchActive || (liveRef.current.touchHover && window.matchMedia?.('(pointer: coarse)').matches)) {
+          e.preventDefault();
+        }
+      };
+
       el.addEventListener('pointerenter', onEnter);
-      el.addEventListener('pointermove', onMove);
+      el.addEventListener('pointermove', onTouchMovePointer);
       el.addEventListener('pointerleave', onLeave);
+      el.addEventListener('pointerdown', onPointerDown, { passive: true });
+      el.addEventListener('pointerup', onPointerEnd, { passive: true });
+      el.addEventListener('pointercancel', onPointerEnd, { passive: true });
+      el.addEventListener('contextmenu', onContextMenu);
       el.addEventListener('click', onClick);
 
       return () => {
@@ -400,8 +431,12 @@ const SplitText = ({
         queued?.kill();
         busy?.kill();
         el.removeEventListener('pointerenter', onEnter);
-        el.removeEventListener('pointermove', onMove);
+        el.removeEventListener('pointermove', onTouchMovePointer);
         el.removeEventListener('pointerleave', onLeave);
+        el.removeEventListener('pointerdown', onPointerDown);
+        el.removeEventListener('pointerup', onPointerEnd);
+        el.removeEventListener('pointercancel', onPointerEnd);
+        el.removeEventListener('contextmenu', onContextMenu);
         el.removeEventListener('click', onClick);
         movers.forEach(node => {
           node.style.translate = '';

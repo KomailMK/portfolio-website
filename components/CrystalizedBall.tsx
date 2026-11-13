@@ -1463,6 +1463,14 @@ const CrystalizedBall = ({
       raf = requestAnimationFrame(frame);
     };
 
+    let touchReleaseTimer: number | null = null;
+    const clearTouchTimer = () => {
+      if (touchReleaseTimer !== null) {
+        window.clearTimeout(touchReleaseTimer);
+        touchReleaseTimer = null;
+      }
+    };
+
     const locate = (e: PointerEvent) => {
       const rect = container.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -1483,16 +1491,28 @@ const CrystalizedBall = ({
       const s = settingsRef.current;
       const spot = locate(e);
       if (!s || !s.interactive || reducedMotion || !spot.inside) return;
+      const isTouch = e.pointerType === 'touch';
+      if (isTouch) clearTouchTimer();
       if (!pointer.inside) pointer.fresh = true;
       pointer.x = spot.x;
       pointer.y = spot.y;
       pointer.inside = true;
       const radius = Math.max(8, (clamp(s.size, 0.1, 1.5) * Math.min(width, height)) / 2);
-      const kx = (spot.x - width / 2) / radius;
-      const ky = (height / 2 - spot.y) / radius;
+      let kx = (spot.x - width / 2) / radius;
+      let ky = (height / 2 - spot.y) / radius;
       const distance = Math.hypot(kx, ky);
-      if (distance > 1.3) return;
+      if (distance > 1.3) {
+        if (!isTouch) return;
+        const scale = distance > 0 ? 1 / distance : 0;
+        kx *= scale;
+        ky *= scale;
+      }
       const strength = clamp(s.hoverStrength, 0, 1);
+      if (isTouch) {
+        heat.angle = Math.atan2(ky, kx);
+        heat.power = Math.max(heat.power, strength * 0.75);
+        heat.near = Math.max(heat.near, 0.8);
+      }
       kick = { x: kx, y: ky, strength: strength * 1.2 };
       surge = Math.max(surge, strength);
       const angle = Math.atan2(ky, kx);
@@ -1502,6 +1522,7 @@ const CrystalizedBall = ({
     };
 
     const onPointerLeave = () => {
+      clearTouchTimer();
       pointer.inside = false;
       start();
     };
@@ -1511,6 +1532,16 @@ const CrystalizedBall = ({
     };
 
     const onPointerUp = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch') return;
+      clearTouchTimer();
+      touchReleaseTimer = window.setTimeout(() => {
+        touchReleaseTimer = null;
+        pointer.inside = false;
+        start();
+      }, 650);
+    };
+
+    const onPointerCancel = (e: PointerEvent) => {
       if (e.pointerType === 'touch') onPointerLeave();
     };
 
@@ -1522,6 +1553,7 @@ const CrystalizedBall = ({
     window.addEventListener('pointerdown', onPointerDown, { passive: true });
     window.addEventListener('pointerout', onPointerOut, { passive: true });
     window.addEventListener('pointerup', onPointerUp, { passive: true });
+    window.addEventListener('pointercancel', onPointerCancel, { passive: true });
     window.addEventListener('blur', onPointerLeave);
     document.addEventListener('visibilitychange', onVisibility);
 
@@ -1539,6 +1571,7 @@ const CrystalizedBall = ({
     return () => {
       alive = false;
       visible = false;
+      clearTouchTimer();
       cancelAnimationFrame(raf);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
@@ -1546,6 +1579,7 @@ const CrystalizedBall = ({
       window.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointerout', onPointerOut);
       window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerCancel);
       window.removeEventListener('blur', onPointerLeave);
       document.removeEventListener('visibilitychange', onVisibility);
       wakeRef.current = null;
