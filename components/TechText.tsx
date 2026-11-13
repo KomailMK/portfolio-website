@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { CSSProperties } from 'react';
 
 type Box = { x1: number; y1: number; x2: number; y2: number };
@@ -129,8 +130,14 @@ const TechText = ({
 }: TechTextProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayRef = useRef<HTMLCanvasElement>(null);
   const settingsRef = useRef<Settings | null>(null);
   const wakeRef = useRef<() => void>(() => {});
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     settingsRef.current = {
@@ -173,10 +180,16 @@ const TechText = ({
     const scratchCtx = scratch.getContext('2d');
     if (!container || !canvas || !ctx || !scratchCtx) return undefined;
 
+    let activeCanvas: HTMLCanvasElement = canvas;
+    let activeCtx: CanvasRenderingContext2D = ctx;
+    let usingOverlay = false;
+
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
     let width = 1;
     let height = 1;
     let dpr = 1;
+    let originX = 0;
+    let originY = 0;
     let raf = 0;
     let last = performance.now();
     let visible = false;
@@ -432,29 +445,29 @@ const TechText = ({
       art: Art,
       dx: number,
       dy: number,
-      originX: number,
-      originY: number
+      localX: number = 0,
+      localY: number = 0
     ) => {
       target.drawImage(
         art.image,
-        Math.round((art.left + dx) * dpr - originX),
-        Math.round((art.top + dy) * dpr - originY)
+        Math.round((art.left + dx + originX) * dpr - localX),
+        Math.round((art.top + dy + originY) * dpr - localY)
       );
     };
 
     const drawReveal = (s: Settings) => {
       const radius = s.reach * dpr;
-      const cx = lens.x * dpr;
-      const cy = lens.y * dpr;
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.fillStyle = falloff(ctx, cx, cy, radius, presence, s.softness);
-      ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
-      ctx.globalCompositeOperation = 'source-over';
+      const cx = (lens.x + originX) * dpr;
+      const cy = (lens.y + originY) * dpr;
+      activeCtx.globalCompositeOperation = 'destination-out';
+      activeCtx.fillStyle = falloff(activeCtx, cx, cy, radius, presence, s.softness);
+      activeCtx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
+      activeCtx.globalCompositeOperation = 'source-over';
 
       const x0 = Math.max(0, Math.floor(cx - radius));
       const y0 = Math.max(0, Math.floor(cy - radius));
-      const x1 = Math.min(canvas.width, Math.ceil(cx + radius));
-      const y1 = Math.min(canvas.height, Math.ceil(cy + radius));
+      const x1 = Math.min(activeCanvas.width, Math.ceil(cx + radius));
+      const y1 = Math.min(activeCanvas.height, Math.ceil(cy + radius));
       if (x1 <= x0 || y1 <= y0) return;
       const w = x1 - x0;
       const h = y1 - y0;
@@ -470,22 +483,22 @@ const TechText = ({
       scratchCtx.fillStyle = falloff(scratchCtx, cx - x0, cy - y0, radius, 1, s.softness);
       scratchCtx.fillRect(0, 0, w, h);
       scratchCtx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = presence;
-      ctx.drawImage(scratch, 0, 0, w, h, x0, y0, w, h);
-      ctx.globalAlpha = 1;
+      activeCtx.globalAlpha = presence;
+      activeCtx.drawImage(scratch, 0, 0, w, h, x0, y0, w, h);
+      activeCtx.globalAlpha = 1;
     };
 
     const crisp = (value: number) => (Math.round(value * dpr) + 0.5) / dpr;
 
     const perimeterPoint = (distance: number, w: number, h: number): [number, number, number, number] => {
       let d = ((distance % (2 * (w + h))) + 2 * (w + h)) % (2 * (w + h));
-      if (d < w) return [frame.x1 + d, frame.y1, 0, -1];
+      if (d < w) return [frame.x1 + originX + d, frame.y1 + originY, 0, -1];
       d -= w;
-      if (d < h) return [frame.x2, frame.y1 + d, 1, 0];
+      if (d < h) return [frame.x2 + originX, frame.y1 + originY + d, 1, 0];
       d -= h;
-      if (d < w) return [frame.x2 - d, frame.y2, 0, 1];
+      if (d < w) return [frame.x2 + originX - d, frame.y2 + originY, 0, 1];
       d -= w;
-      return [frame.x1, frame.y2 - d, -1, 0];
+      return [frame.x1 + originX, frame.y2 + originY - d, -1, 0];
     };
 
     const drawSpecks = (s: Settings, a: number, accent: string) => {
@@ -495,8 +508,8 @@ const TechText = ({
       const perimeter = 2 * (w + h);
       const seed = frame.index + 1;
       const grid = 3;
-      ctx.fillStyle = accent;
-      ctx.strokeStyle = accent;
+      activeCtx.fillStyle = accent;
+      activeCtx.strokeStyle = accent;
 
       for (let k = 0; k < s.specks; k++) {
         const period = 0.5 + noise(seed, k, 11) * 1.2;
@@ -509,19 +522,19 @@ const TechText = ({
         const size = pick < 0.46 ? 2 : pick < 0.7 ? 3 : pick < 0.84 ? 5 : pick < 0.94 ? 8 : 11;
         const large = size >= 8;
         const out = (large ? 9 : 4) + Math.floor(noise(seed, k, cycle, 1) * 5) * grid;
-        const x = frame.x1 + Math.round((px + nx * out - frame.x1) / grid) * grid;
-        const y = frame.y1 + Math.round((py + ny * out - frame.y1) / grid) * grid;
+        const x = frame.x1 + originX + Math.round((px + nx * out - (frame.x1 + originX)) / grid) * grid;
+        const y = frame.y1 + originY + Math.round((py + ny * out - (frame.y1 + originY)) / grid) * grid;
         const tone = noise(seed, k, cycle, 3);
         const blink = life < 0.06 || (life > 0.32 && life < 0.36) ? 0.35 : 1;
         const alpha = a * (large ? 0.3 + 0.4 * tone : 0.3 + 0.6 * tone) * blink;
         const left = Math.round(x - size / 2);
         const top = Math.round(y - size / 2);
-        ctx.globalAlpha = alpha;
+        activeCtx.globalAlpha = alpha;
         if (tone < 0.26 || (large && tone < 0.78)) {
-          ctx.strokeRect(left + 0.5, top + 0.5, size, size);
-          if (large && tone > 0.5) ctx.fillRect(Math.round(x) - 1, Math.round(y) - 1, 2, 2);
+          activeCtx.strokeRect(left + 0.5, top + 0.5, size, size);
+          if (large && tone > 0.5) activeCtx.fillRect(Math.round(x) - 1, Math.round(y) - 1, 2, 2);
         } else {
-          ctx.fillRect(left, top, size, size);
+          activeCtx.fillRect(left, top, size, size);
         }
       }
 
@@ -530,110 +543,121 @@ const TechText = ({
         for (let i = 0; i < 4; i++) {
           const [x, y] = perimeterPoint(head - i * 6, w, h);
           const size = i === 0 ? 3 : 2;
-          ctx.globalAlpha = a * [0.95, 0.55, 0.32, 0.16][i];
-          ctx.fillRect(Math.round(x - size / 2), Math.round(y - size / 2), size, size);
+          activeCtx.globalAlpha = a * [0.95, 0.55, 0.32, 0.16][i];
+          activeCtx.fillRect(Math.round(x - size / 2), Math.round(y - size / 2), size, size);
         }
       }
-      ctx.globalAlpha = 1;
+      activeCtx.globalAlpha = 1;
     };
 
     const drawFrame = (s: Settings, accent: string) => {
       const glyph = glyphs[frame.index];
       if (!glyph || frame.alpha < 0.01) return;
       const a = frame.alpha;
-      const x1 = crisp(frame.x1);
-      const y1 = crisp(frame.y1);
-      const x2 = crisp(frame.x2);
-      const y2 = crisp(frame.y2);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.fillStyle = accent;
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = 1;
+      const x1 = crisp(frame.x1 + originX);
+      const y1 = crisp(frame.y1 + originY);
+      const x2 = crisp(frame.x2 + originX);
+      const y2 = crisp(frame.y2 + originY);
+      activeCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      activeCtx.fillStyle = accent;
+      activeCtx.strokeStyle = accent;
+      activeCtx.lineWidth = 1;
 
       const moved = Math.hypot(glyph.offset.x, glyph.offset.y);
       if (moved > 1) {
-        const hx = (glyph.box.x1 + glyph.box.x2) / 2;
-        const hy = (glyph.box.y1 + glyph.box.y2) / 2;
-        ctx.beginPath();
-        ctx.moveTo(hx, hy);
-        ctx.lineTo(hx + glyph.offset.x, hy + glyph.offset.y);
-        ctx.setLineDash([3, 4]);
-        ctx.globalAlpha = 0.45 * a;
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.beginPath();
-        ctx.rect(Math.round(hx) - 2, Math.round(hy) - 2, 4, 4);
-        ctx.globalAlpha = 0.7 * a;
-        ctx.fill();
+        const hx = (glyph.box.x1 + glyph.box.x2) / 2 + originX;
+        const hy = (glyph.box.y1 + glyph.box.y2) / 2 + originY;
+        activeCtx.beginPath();
+        activeCtx.moveTo(hx, hy);
+        activeCtx.lineTo(hx + glyph.offset.x, hy + glyph.offset.y);
+        activeCtx.setLineDash([3, 4]);
+        activeCtx.globalAlpha = 0.65 * a;
+        activeCtx.stroke();
+        activeCtx.setLineDash([]);
+        activeCtx.beginPath();
+        activeCtx.rect(Math.round(hx) - 2, Math.round(hy) - 2, 4, 4);
+        activeCtx.globalAlpha = 0.85 * a;
+        activeCtx.fill();
       }
 
-      ctx.beginPath();
-      ctx.rect(x1, y1, x2 - x1, y2 - y1);
-      ctx.globalAlpha = 0.5 * a;
-      ctx.stroke();
+      activeCtx.beginPath();
+      activeCtx.rect(x1, y1, x2 - x1, y2 - y1);
+      activeCtx.globalAlpha = 0.65 * a;
+      activeCtx.stroke();
 
-      ctx.beginPath();
+      activeCtx.beginPath();
       for (const [cx, cy] of [
         [x1, y1],
         [x2, y1],
         [x2, y2],
         [x1, y2]
       ]) {
-        ctx.rect(Math.round(cx) - 2, Math.round(cy) - 2, 5, 5);
+        activeCtx.rect(Math.round(cx) - 2, Math.round(cy) - 2, 5, 5);
       }
-      ctx.globalAlpha = 0.95 * a;
-      ctx.fill();
-      ctx.globalAlpha = 1;
+      activeCtx.globalAlpha = 0.95 * a;
+      activeCtx.fill();
+      activeCtx.globalAlpha = 1;
 
       if (s.specks > 0) drawSpecks(s, a, accent);
 
       if (!s.labels) return;
-      ctx.font = LABEL_FONT;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'bottom';
-      ctx.fillStyle = accent;
-      ctx.globalAlpha = 0.62 * a;
+      activeCtx.font = LABEL_FONT;
+      if ('letterSpacing' in activeCtx) {
+        (activeCtx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '0px';
+      }
+      activeCtx.textAlign = 'left';
+      activeCtx.textBaseline = 'bottom';
+      activeCtx.fillStyle = '#ffffff';
+      activeCtx.globalAlpha = Math.min(1, 0.95 * a);
       const label =
         moved > 1
           ? `${signed(Math.round(glyph.offset.x))}, ${signed(Math.round(-glyph.offset.y))}`
           : `${glyph.char}  ${Math.round(glyph.box.x2 - glyph.box.x1)} × ${Math.round(glyph.box.y2 - glyph.box.y1)}`;
-      ctx.fillText(label, Math.round(frame.x1), Math.round(frame.y1) - 7);
-      ctx.globalAlpha = 1;
+      const rawY = Math.round(frame.y1 + originY) - 7;
+      const labelY = rawY < 14 ? Math.round(frame.y2 + originY) + 16 : rawY;
+      activeCtx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+      activeCtx.shadowBlur = 4;
+      activeCtx.fillText(label, Math.round(frame.x1 + originX), labelY);
+      activeCtx.shadowBlur = 0;
+      activeCtx.globalAlpha = 1;
     };
 
     const drawLines = (s: Settings, view: Word, accent: string, alpha: number, growth: (k: number) => number) => {
       const pad = Math.max(12, view.size * 0.12);
-      const x1 = Math.round(view.left - pad);
-      const x2 = Math.round(view.right + pad);
-      const room = width - x2 > x1;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.strokeStyle = accent;
-      ctx.fillStyle = accent;
-      ctx.lineWidth = 1;
-      ctx.font = LABEL_FONT;
-      ctx.textBaseline = 'middle';
-      ctx.textAlign = room ? 'left' : 'right';
+      const x1 = Math.round(view.left - pad + originX);
+      const x2 = Math.round(view.right + pad + originX);
+      const room = width - (x2 - originX) > x1 - originX;
+      activeCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      activeCtx.strokeStyle = accent;
+      activeCtx.fillStyle = accent;
+      activeCtx.lineWidth = 1;
+      activeCtx.font = LABEL_FONT;
+      if ('letterSpacing' in activeCtx) {
+        (activeCtx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '0px';
+      }
+      activeCtx.textBaseline = 'middle';
+      activeCtx.textAlign = room ? 'left' : 'right';
       view.lines.forEach((line, k) => {
         const grow = growth(k);
         if (grow <= 0.001) return;
-        const y = crisp(line.y);
+        const y = crisp(line.y + originY);
         const end = x1 + (x2 - x1) * grow;
-        ctx.globalAlpha = alpha * 0.4;
-        ctx.beginPath();
-        ctx.moveTo(x1, y);
-        ctx.lineTo(end, y);
-        ctx.stroke();
-        ctx.globalAlpha = alpha * 0.9;
-        ctx.fillRect(x1 - 1, Math.round(line.y) - 1, 3, 3);
-        ctx.fillRect(Math.round(end) - 1, Math.round(line.y) - 1, 3, 3);
+        activeCtx.globalAlpha = alpha * 0.4;
+        activeCtx.beginPath();
+        activeCtx.moveTo(x1, y);
+        activeCtx.lineTo(end, y);
+        activeCtx.stroke();
+        activeCtx.globalAlpha = alpha * 0.9;
+        activeCtx.fillRect(x1 - 1, Math.round(line.y + originY) - 1, 3, 3);
+        activeCtx.fillRect(Math.round(end) - 1, Math.round(line.y + originY) - 1, 3, 3);
         if (s.labels) {
-          ctx.globalAlpha = alpha * 0.62 * smoothstep(0.7, 1, grow);
-          ctx.fillText(line.label, room ? x2 + 8 : x1 - 8, Math.round(line.y));
+          activeCtx.globalAlpha = alpha * 0.62 * smoothstep(0.7, 1, grow);
+          activeCtx.fillText(line.label, room ? x2 + 8 : x1 - 8, Math.round(line.y + originY));
         }
       });
-      ctx.textAlign = 'left';
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.globalAlpha = 1;
+      activeCtx.textAlign = 'left';
+      activeCtx.setTransform(1, 0, 0, 1, 0, 0);
+      activeCtx.globalAlpha = 1;
     };
 
     const ensureCells = (glyph: Glyph, view: Word): Cell[] => {
@@ -684,28 +708,28 @@ const TechText = ({
     };
 
     const cellRect = (x: number, y: number, size: number): [number, number, number, number] => {
-      const left = Math.round(x * dpr);
-      const top = Math.round(y * dpr);
-      return [left, top, Math.round((x + size) * dpr) - left, Math.round((y + size) * dpr) - top];
+      const left = Math.round((x + originX) * dpr);
+      const top = Math.round((y + originY) * dpr);
+      return [left, top, Math.round((x + size + originX) * dpr) - left, Math.round((y + size + originY) * dpr) - top];
     };
 
     const drawAssembling = (glyph: Glyph, progress: number, accent: string) => {
       const cells = glyph.cells || [];
-      ctx.save();
-      ctx.beginPath();
+      activeCtx.save();
+      activeCtx.beginPath();
       let landed = 0;
       for (const cell of cells) {
         if (progress < cell.land) continue;
         const [x, y, w, h] = cellRect(cell.x, cell.y, cell.size);
-        ctx.rect(x, y, w, h);
+        activeCtx.rect(x, y, w, h);
         landed++;
       }
       if (landed) {
-        ctx.clip();
-        blit(ctx, glyph.fill, 0, 0, 0, 0);
+        activeCtx.clip();
+        blit(activeCtx, glyph.fill, 0, 0, 0, 0);
       }
-      ctx.restore();
-      ctx.fillStyle = accent;
+      activeCtx.restore();
+      activeCtx.fillStyle = accent;
       for (const cell of cells) {
         if (progress < cell.start || progress >= cell.land) continue;
         const u = (progress - cell.start) / (cell.land - cell.start);
@@ -714,16 +738,16 @@ const TechText = ({
         const x = cell.x + (cell.size - size) / 2 + cell.dx * (1 - eased);
         const y = cell.y + (cell.size - size) / 2 + cell.dy * (1 - eased);
         const [left, top, w, h] = cellRect(x, y, size);
-        ctx.globalAlpha = Math.min(1, u * 4) * (0.55 + 0.45 * eased);
-        ctx.fillRect(left, top, Math.max(1, w), Math.max(1, h));
+        activeCtx.globalAlpha = Math.min(1, u * 4) * (0.55 + 0.45 * eased);
+        activeCtx.fillRect(left, top, Math.max(1, w), Math.max(1, h));
       }
-      ctx.globalAlpha = 1;
+      activeCtx.globalAlpha = 1;
     };
 
     const drawFilling = (glyph: Glyph, lead: number, progress: number, view: Word) => {
       const art = glyph.fill;
-      const left = Math.floor(art.left * dpr);
-      const top = Math.floor(art.top * dpr);
+      const left = Math.floor((art.left + originX) * dpr);
+      const top = Math.floor((art.top + originY) * dpr);
       const w = art.image.width + 2;
       const h = art.image.height + 2;
       const fill = clamp01((progress - 0.24 - 0.28 * lead) / 0.48);
@@ -732,30 +756,30 @@ const TechText = ({
         const amount = smoothstep(0.3 * band.order, 0.3 * band.order + 0.4, fill);
         if (amount <= 0) continue;
         const span = (band.y1 - band.y0) * amount;
-        const y0 = Math.round((band.up ? band.y1 - span : band.y0) * dpr);
-        const y1 = Math.round((band.up ? band.y1 : band.y0 + span) * dpr);
+        const y0 = Math.round((band.up ? band.y1 - span + originY : band.y0 + originY) * dpr);
+        const y1 = Math.round((band.up ? band.y1 + originY : band.y0 + span + originY) * dpr);
         if (y1 > y0) rects.push([y0, y1 - y0]);
       }
       const outline = smoothstep(0.08 + 0.2 * lead, 0.22 + 0.2 * lead, progress);
       if (outline > 0.001) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(left - 2, top - 2, w + 2, h + 2);
-        for (const [y, span] of rects) ctx.rect(left - 2, y, w + 2, span);
-        ctx.clip('evenodd');
-        ctx.globalAlpha = outline;
-        blit(ctx, glyph.dashes, 0, 0, 0, 0);
-        ctx.restore();
+        activeCtx.save();
+        activeCtx.beginPath();
+        activeCtx.rect(left - 2, top - 2, w + 2, h + 2);
+        for (const [y, span] of rects) activeCtx.rect(left - 2, y, w + 2, span);
+        activeCtx.clip('evenodd');
+        activeCtx.globalAlpha = outline;
+        blit(activeCtx, glyph.dashes, 0, 0, 0, 0);
+        activeCtx.restore();
       }
       if (rects.length) {
-        ctx.save();
-        ctx.beginPath();
-        for (const [y, span] of rects) ctx.rect(left - 2, y, w + 2, span);
-        ctx.clip();
-        blit(ctx, glyph.fill, 0, 0, 0, 0);
-        ctx.restore();
+        activeCtx.save();
+        activeCtx.beginPath();
+        for (const [y, span] of rects) activeCtx.rect(left - 2, y, w + 2, span);
+        activeCtx.clip();
+        blit(activeCtx, glyph.fill, 0, 0, 0, 0);
+        activeCtx.restore();
       }
-      ctx.globalAlpha = 1;
+      activeCtx.globalAlpha = 1;
     };
 
     const kick = (index: number) => {
@@ -775,15 +799,61 @@ const TechText = ({
       raf = 0;
       const s = settingsRef.current;
       if (!s) return;
-      if (sizeDirty) {
-        sizeDirty = false;
-        width = Math.max(1, container.clientWidth);
-        height = Math.max(1, container.clientHeight);
-        dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const pixelWidth = Math.round(width * dpr);
-        const pixelHeight = Math.round(height * dpr);
-        if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
-        if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = Math.max(1, container.clientWidth);
+      height = Math.max(1, container.clientHeight);
+
+      const isFixed = dragging >= 0 || glyphs.some(g => Math.hypot(g.offset.x, g.offset.y) > 0.5);
+      const overlay = overlayRef.current;
+      const overlayCtx = overlay ? overlay.getContext('2d') : null;
+
+      if (isFixed && overlay && overlayCtx) {
+        if (!usingOverlay) {
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          canvas.style.visibility = 'hidden';
+          overlay.style.display = 'block';
+          usingOverlay = true;
+        }
+        const oRect = overlay.getBoundingClientRect();
+        const rect = container.getBoundingClientRect();
+        const vw = oRect.width || window.innerWidth;
+        const vh = oRect.height || window.innerHeight;
+        const targetW = Math.max(1, Math.round(vw * dpr));
+        const targetH = Math.max(1, Math.round(vh * dpr));
+        if (overlay.width !== targetW) overlay.width = targetW;
+        if (overlay.height !== targetH) overlay.height = targetH;
+        originX = rect.left - oRect.left;
+        originY = rect.top - oRect.top;
+        activeCanvas = overlay;
+        activeCtx = overlayCtx;
+      } else {
+        if (usingOverlay && overlay && overlayCtx) {
+          overlayCtx.setTransform(1, 0, 0, 1, 0, 0);
+          overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+          overlay.style.display = 'none';
+          canvas.style.visibility = 'visible';
+          usingOverlay = false;
+        }
+        const BLEED_X = 60;
+        const BLEED_Y = 80;
+        const targetW = Math.round((width + BLEED_X * 2) * dpr);
+        const targetH = Math.round((height + BLEED_Y * 2) * dpr);
+        if (canvas.width !== targetW) canvas.width = targetW;
+        if (canvas.height !== targetH) canvas.height = targetH;
+        if (canvas.style.position !== 'absolute') {
+          canvas.style.position = 'absolute';
+          canvas.style.left = `-${BLEED_X}px`;
+          canvas.style.top = `-${BLEED_Y}px`;
+          canvas.style.width = `${width + BLEED_X * 2}px`;
+          canvas.style.height = `${height + BLEED_Y * 2}px`;
+          canvas.style.zIndex = '2';
+          canvas.style.pointerEvents = 'none';
+        }
+        originX = BLEED_X;
+        originY = BLEED_Y;
+        activeCanvas = canvas;
+        activeCtx = ctx;
       }
       const dt = Math.min(0.05, Math.max(0.001, (now - last) / 1000));
       last = now;
@@ -914,16 +984,16 @@ const TechText = ({
         container.style.cursor = nextCursor;
       }
 
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = 1;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      activeCtx.setTransform(1, 0, 0, 1, 0, 0);
+      activeCtx.globalCompositeOperation = 'source-over';
+      activeCtx.globalAlpha = 1;
+      activeCtx.clearRect(0, 0, activeCanvas.width, activeCanvas.height);
       for (const glyph of glyphs) {
         const moved = Math.hypot(glyph.offset.x, glyph.offset.y);
         if (moved > 1) {
-          ctx.globalAlpha = Math.min(1, moved / 24) * 0.55;
-          blit(ctx, glyph.dashes, 0, 0, 0, 0);
-          ctx.globalAlpha = 1;
+          activeCtx.globalAlpha = Math.min(1, moved / 24) * 0.55;
+          blit(activeCtx, glyph.dashes, 0, 0, 0, 0);
+          activeCtx.globalAlpha = 1;
         }
       }
       if (introducing && introKind === 'metrics') {
@@ -950,14 +1020,14 @@ const TechText = ({
         }
         if (glyph.shown < 0.001) return;
         if (glyph.outline < 0.999) {
-          ctx.globalAlpha = (1 - glyph.outline) * glyph.shown;
-          blit(ctx, glyph.fill, glyph.offset.x, glyph.offset.y, 0, 0);
+          activeCtx.globalAlpha = (1 - glyph.outline) * glyph.shown;
+          blit(activeCtx, glyph.fill, glyph.offset.x, glyph.offset.y, 0, 0);
         }
         if (glyph.outline > 0.001) {
-          ctx.globalAlpha = glyph.outline * glyph.shown;
-          blit(ctx, glyph.dashes, glyph.offset.x, glyph.offset.y, 0, 0);
+          activeCtx.globalAlpha = glyph.outline * glyph.shown;
+          blit(activeCtx, glyph.dashes, glyph.offset.x, glyph.offset.y, 0, 0);
         }
-        ctx.globalAlpha = 1;
+        activeCtx.globalAlpha = 1;
       });
       if (presence > 0.001) drawReveal(s);
       drawFrame(s, accent);
@@ -1010,17 +1080,26 @@ const TechText = ({
       press.time = performance.now();
       press.index = index;
       if (s?.draggable && index >= 0) {
+        if (e.pointerType === 'touch') {
+          try {
+            e.preventDefault();
+          } catch (_) {}
+        }
         dragging = index;
         grab.x = pointer.x - glyphs[index].offset.x;
         grab.y = pointer.y - glyphs[index].offset.y;
-        container.setPointerCapture?.(e.pointerId);
+        try {
+          container.setPointerCapture?.(e.pointerId);
+        } catch (_) {}
       }
       wake();
     };
     const onUp = (e: PointerEvent) => {
       if (dragging >= 0) {
         dragging = -1;
-        container.releasePointerCapture?.(e.pointerId);
+        try {
+          container.releasePointerCapture?.(e.pointerId);
+        } catch (_) {}
         const rect = container.getBoundingClientRect();
         pointer.inside =
           e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
@@ -1041,14 +1120,21 @@ const TechText = ({
 
     container.addEventListener('pointermove', onMove, { passive: true });
     container.addEventListener('pointerenter', onMove, { passive: true });
-    container.addEventListener('pointerdown', onDown, { passive: true });
+    container.addEventListener('pointerdown', onDown, { passive: false });
     container.addEventListener('pointerup', onUp, { passive: true });
     container.addEventListener('pointercancel', onUp, { passive: true });
     container.addEventListener('pointerleave', onLeave, { passive: true });
+    window.addEventListener('pointerup', onUp, { passive: true });
+    window.addEventListener('pointercancel', onUp, { passive: true });
+
+    const onScroll = () => {
+      if (dragging >= 0 || usingOverlay) wake();
+    };
 
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(container);
     window.addEventListener('resize', resize, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     const intersectionObserver = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
       wake();
@@ -1070,10 +1156,14 @@ const TechText = ({
       wakeRef.current = () => {};
       resizeObserver.disconnect();
       window.removeEventListener('resize', resize);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
       intersectionObserver.disconnect();
       themeObserver.disconnect();
       schemeQuery?.removeEventListener?.('change', wake);
       container.style.cursor = '';
+      if (overlayRef.current) overlayRef.current.style.display = 'none';
       container.removeEventListener('pointermove', onMove);
       container.removeEventListener('pointerenter', onMove);
       container.removeEventListener('pointerdown', onDown);
@@ -1087,11 +1177,35 @@ const TechText = ({
     <div
       ref={containerRef}
       className={`relative w-full h-full touch-pan-y select-none ${className}`.trim()}
-      style={style}
+      style={{ ...style, overflow: 'visible' }}
       role="img"
       aria-label={text}
     >
-      <canvas ref={canvasRef} className="block w-full h-full" />
+      <canvas
+        ref={canvasRef}
+        className="block pointer-events-none"
+        style={{ overflow: 'visible', letterSpacing: '0px', textTransform: 'none' }}
+      />
+      {mounted &&
+        createPortal(
+          <canvas
+            ref={overlayRef}
+            aria-hidden="true"
+            style={{
+              position: 'fixed',
+              left: 0,
+              top: 0,
+              width: '100vw',
+              height: '100vh',
+              pointerEvents: 'none',
+              zIndex: 99999,
+              display: 'none',
+              letterSpacing: '0px',
+              textTransform: 'none'
+            }}
+          />,
+          document.body
+        )}
     </div>
   );
 };

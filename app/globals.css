@@ -639,6 +639,7 @@ html:not(.build-mode) .boot-loader {
   height: clamp(62px, 9.8vw, 125px);
   margin: 0;
   display: block;
+  overflow: visible;
 }
 
 .contact-heading-tech {
@@ -648,12 +649,14 @@ html:not(.build-mode) .boot-loader {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  overflow: visible;
 }
 
 .tech-contact-line {
   position: relative;
   width: 100%;
   height: clamp(48px, 7.2vw, 94px);
+  overflow: visible;
 }
 
 .section-lede {
