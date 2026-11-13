@@ -1542,7 +1542,7 @@ export default function CursorOrchestrator({ children }: { children: React.React
       {children}
 
       {booted && agentsEnabled && (
-        <div className="pointer-events-none fixed inset-0 z-40 overflow-hidden select-none">
+        <div className="pointer-events-none fixed inset-0 z-[45] overflow-hidden select-none">
           <div ref={ghostLayerRef} className="pointer-events-none fixed inset-0" aria-hidden="true" />
           <svg ref={overlaySvgRef} className="pointer-events-none fixed inset-0 w-full h-full" aria-hidden="true" />
           <div ref={overlayBadgesRef} className="pointer-events-none fixed inset-0" aria-hidden="true" />
