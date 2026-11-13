@@ -84,7 +84,8 @@ export default function RootLayout({
                   var agentsParam = params.get('agents');
                   var saved = localStorage.getItem('portfolio_agents');
                   var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                  var enabled = agentsParam === 'on' ? true : agentsParam === 'off' ? false : (saved !== null ? saved === 'true' : !prefersReduced);
+                  var enabled = agentsParam === 'on' ? true : agentsParam === 'off' ? false : (saved !== null ? saved === 'true' : false);
+                  if (prefersReduced && agentsParam !== 'on') enabled = false;
                   if (enabled) {
                     document.documentElement.classList.add('build-mode');
                   }

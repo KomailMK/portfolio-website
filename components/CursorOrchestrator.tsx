@@ -112,7 +112,7 @@ function releaseCursor(cursor: AgentCursor) {
 
 export default function CursorOrchestrator({ children }: { children: React.ReactNode }) {
   const [booted, setBooted] = useState(false);
-  const [agentsEnabled, setAgentsEnabled] = useState(true);
+  const [agentsEnabled, setAgentsEnabled] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isTouring, setIsTouring] = useState(false);
   const [activeBuildingCount, setActiveBuildingCount] = useState(0);
@@ -126,7 +126,7 @@ export default function CursorOrchestrator({ children }: { children: React.React
   const lastIsMobileRef = useRef<boolean | null>(null);
 
   const isPausedRef = useRef(false);
-  const agentsEnabledRef = useRef(true);
+  const agentsEnabledRef = useRef(false);
   const isTouringRef = useRef(false);
 
   // Continuous Constant-Speed Tour state
@@ -156,14 +156,15 @@ export default function CursorOrchestrator({ children }: { children: React.React
       const saved = localStorage.getItem("portfolio_agents");
       const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      let enabled = true;
+      let enabled = false;
       if (agentsParam === "on") {
         enabled = true;
       } else if (agentsParam === "off") {
         enabled = false;
       } else if (saved !== null) {
         enabled = saved === "true";
-      } else if (prefersReduced) {
+      }
+      if (prefersReduced && agentsParam !== "on") {
         enabled = false;
       }
 
@@ -274,6 +275,14 @@ export default function CursorOrchestrator({ children }: { children: React.React
     if (isTouringRef.current) {
       stopTour();
       return;
+    }
+
+    if (!agentsEnabledRef.current) {
+      agentsEnabledRef.current = true;
+      setAgentsEnabled(true);
+      setBooted(true);
+      document.documentElement.classList.add("build-mode");
+      window.dispatchEvent(new CustomEvent("portfolio:agentschange", { detail: { enabled: true } }));
     }
 
     // Release any mid-flight cursors so none stay frozen

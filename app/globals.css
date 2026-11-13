@@ -392,6 +392,10 @@ html:not(.build-mode) .boot-loader {
   text-wrap: balance;
 }
 
+.hero-name-line {
+  display: block;
+}
+
 .name-period,
 .accent-period {
   color: var(--accent);

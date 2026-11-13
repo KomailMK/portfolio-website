@@ -2,6 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowDownRight, ArrowUpRight } from "lucide-react";
+import SplitText from "./SplitText";
 export default function HeroSection() {
   const handleEmailClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) {
@@ -43,18 +44,67 @@ export default function HeroSection() {
 
       <div className="hero-content">
         <section className="hero-intro" aria-labelledby="hero-name">
-          <p className="handwritten" data-build="type">
-            Hello, I&apos;m
+          <p className="handwritten">
+            <SplitText
+              tag="span"
+              text="Hello, I'm"
+              effect="rise"
+              splitType="chars"
+              delay={50}
+              duration={1.25}
+              staggerFrom="start"
+              trigger="view"
+              hoverEffect="lift"
+              loop={false}
+              loopDelay={1.5}
+              mask={false}
+              threshold={0.1}
+              rootMargin="-100px"
+              textAlign="left"
+            />
           </p>
           <h1
             className="hero-name"
             id="hero-name"
             aria-label="Komail Ahmad Khalil"
-            data-build="type"
           >
-            Komail
-            <br />
-            Ahmad Khalil<span className="name-period"></span>
+            <SplitText
+              tag="span"
+              text="Komail"
+              className="hero-name-line"
+              effect="rise"
+              splitType="chars"
+              delay={50}
+              duration={1.25}
+              staggerFrom="start"
+              trigger="view"
+              hoverEffect="lift"
+              loop={false}
+              loopDelay={1.5}
+              mask={false}
+              threshold={0.1}
+              rootMargin="-100px"
+              textAlign="left"
+            />
+            <SplitText
+              tag="span"
+              text="Ahmad Khalil"
+              className="hero-name-line"
+              effect="rise"
+              splitType="chars"
+              delay={50}
+              duration={1.25}
+              staggerFrom="start"
+              trigger="view"
+              hoverEffect="lift"
+              loop={false}
+              loopDelay={1.5}
+              mask={false}
+              threshold={0.1}
+              rootMargin="-100px"
+              textAlign="left"
+            />
+            <span className="name-period"></span>
           </h1>
           <p className="hero-role" data-build="type">
             Software Engineer <span className="hero-role-sep">·</span> Data Science &amp; AI Specialist
