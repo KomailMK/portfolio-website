@@ -45,6 +45,15 @@ export const metadata: Metadata = {
     "YOLOv8",
   ],
   authors: [{ name: "Komail Ahmad Khalil" }],
+  icons: {
+    icon: [
+      { url: "/me.png", type: "image/png" },
+      { url: "/me.png", sizes: "32x32", type: "image/png" },
+      { url: "/me.png", sizes: "16x16", type: "image/png" },
+    ],
+    shortcut: "/me.png",
+    apple: "/me.png",
+  },
 };
 
 export default function RootLayout({
@@ -63,6 +72,9 @@ export default function RootLayout({
       }}
     >
       <head>
+        <link rel="icon" type="image/png" href="/me.png" />
+        <link rel="shortcut icon" type="image/png" href="/me.png" />
+        <link rel="apple-touch-icon" href="/me.png" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

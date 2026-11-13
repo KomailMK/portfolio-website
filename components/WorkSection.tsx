@@ -50,6 +50,40 @@ const projects: Project[] = [
   },
   {
     index: "03",
+    title: "Student GPA Prediction System",
+    titleLink: "https://predictmygpa.pythonanywhere.com/",
+    category: "Academic ML · Predictive modeling",
+    date: "2026",
+    description: [
+      "Engineered an end-to-end machine learning web application predicting semester GPA with 97.6% R² accuracy on unseen records.",
+      "Trained a scikit-learn Random Forest regression pipeline evaluating attendance, study hours, prior CGPA, and quiz scores.",
+      "Built a Flask backend with MySQL persistence, SHA-256 credential hashing, and 6-digit SMTP email verification.",
+    ],
+    stack: ["Python", "Flask", "scikit-learn", "MySQL", "Random Forest"],
+    link: {
+      label: "Prediction Pipeline Spec",
+      url: "https://github.com/KomailMK/Student_GPA_Predictions",
+    },
+  },
+  {
+    index: "04",
+    title: "Linkora: Branded QR Code Studio",
+    titleLink: "https://linkora-qr-studio.vercel.app/",
+    category: "Web application · Serverless full stack",
+    date: "2026",
+    description: [
+      "Engineered a serverless web studio for designing, customizing, and generating high-resolution branded QR codes and link cards.",
+      "Implemented passwordless authentication with 6-digit Email OTPs and WebAuthn biometric passkeys powered by Supabase.",
+      "Architected Row Level Security (RLS) policies, cloud design history, and client-side canvas PNG rendering.",
+    ],
+    stack: ["JavaScript", "Supabase", "Passkeys (WebAuthn)", "PostgreSQL", "Vercel"],
+    link: {
+      label: "Studio Architecture & Spec",
+      url: "https://github.com/KomailMK/QR-Code-Generator-linkora",
+    },
+  },
+  {
+    index: "05",
     title: "AI-Based Anemia Detection Application",
     titleLink: "https://newany.pythonanywhere.com/",
     category: "Healthcare · Applied AI",
@@ -66,7 +100,7 @@ const projects: Project[] = [
     },
   },
   {
-    index: "04",
+    index: "06",
     title: "Multilingual RAG Application",
     titleLink: "https://hajj-chatbot-murex.vercel.app/",
     category: "Independent project · Applied AI",
@@ -83,7 +117,7 @@ const projects: Project[] = [
     },
   },
   {
-    index: "05",
+    index: "07",
     title: "Property Hub Pakistan",
     titleLink: "https://zameensalekpk.vercel.app/",
     category: "Independent project · Full stack",
@@ -137,7 +171,9 @@ export default function WorkSection() {
         {projects.map((project) => (
           <article className="project-card" key={project.index}>
             <div className="project-topline">
-              <span className="project-index" data-build="type">{project.index} / 05</span>
+              <span className="project-index" data-build="type">
+                {project.index} / {projects.length.toString().padStart(2, "0")}
+              </span>
               <span className="project-date" data-build="type">{project.date}</span>
             </div>
             <div className="project-content">

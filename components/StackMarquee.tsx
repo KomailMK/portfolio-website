@@ -1,5 +1,46 @@
 "use client";
 import React, { type ReactNode } from "react";
+
+const tools = [
+  "Python",
+  "JavaScript",
+  "TypeScript",
+  "Go (Golang)",
+  "Kotlin",
+  "Rust",
+  "Swift",
+  "HTML/CSS",
+  "SQL",
+  "React",
+  "Next.js",
+  "Node.js",
+  "Gin / Fiber",
+  "Actix-web / Axum",
+  "Flask",
+  "FastAPI",
+  "RESTful APIs",
+  "MySQL",
+  "Deep Learning",
+  "Federated Learning",
+  "Vision-Language Models",
+  "YOLOv8",
+  "RAG pipelines",
+  "LangChain",
+  "NLP",
+  "PyTorch",
+  "TensorFlow",
+  "OpenCV",
+  "Scikit-Learn",
+  "ONNX",
+  "Git",
+  "Web Deployment",
+  "Postman",
+  "CI/CD",
+  "Agile Methodologies",
+  "Pandas",
+  "NumPy",
+];
+
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <p className="section-label" data-build="type">
@@ -8,6 +49,7 @@ function SectionLabel({ children }: { children: ReactNode }) {
     </p>
   );
 }
+
 export default function StackMarquee() {
   return (
     <section className="stack-section" id="stack" aria-labelledby="stack-heading">
@@ -22,6 +64,19 @@ export default function StackMarquee() {
               Every tool listed on my resume, all in one place.
             </p>
           </div>
+        </div>
+      </div>
+
+      <div className="marquee-viewport" data-build="pop">
+        <div className="marquee-track">
+          {[...tools, ...tools].map((tool, index) => (
+            <span className="marquee-item" key={`${tool}-${index}`}>
+              <span className="marquee-star" aria-hidden="true">
+                ✳
+              </span>
+              {tool}
+            </span>
+          ))}
         </div>
       </div>
       <div className="section stack-categories">

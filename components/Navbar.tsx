@@ -241,8 +241,7 @@ export default function Navbar() {
         aria-hidden="true"
         data-open={mobileMenuOpen}
         onClick={() => setMobileMenuOpen(false)}
-        className="mobile-nav-backdrop md:hidden"
-      />
+        className="mobile-nav-backdrop md:hidden"/>
       <header
         ref={headerRef}
         className={`glass-navbar ${scrolled ? "is-scrolled" : ""} ${
@@ -257,7 +256,7 @@ export default function Navbar() {
             className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#ff3b2f] rounded active:scale-[0.98] transition-transform"
           >
             <div className="w-8 h-8 rounded-md bg-white/[0.06] border border-white/[0.14] flex items-center justify-center group-hover:border-[#ff3b2f] group-hover:bg-[#ff3b2f]/10 transition-colors">
-              <span className="font-anton text-sm text-[#ff3b2f]">K</span>
+              <span className="font-anton text-sm text-[#ff3b2f]">MK</span>
             </div>
             <div className="flex flex-col">
               <span className="font-anton text-base tracking-wider uppercase text-white group-hover:text-zinc-200 transition-colors">

@@ -61,7 +61,7 @@ export default function AboutSection() {
             <p data-build="type">
               I&apos;m a software engineer and data science specialist based in
               Peshawar, Pakistan. My work spans full-stack development, applied AI,
-              and machine learning—from secure clinical software to computer vision
+              and machine learning from secure clinical software to computer vision
               and language systems.
             </p>
             <p data-build="type">

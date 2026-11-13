@@ -51,7 +51,7 @@ export default function RecordSection() {
             Built over time<span className="accent-period">.</span>
           </h2>
           <p className="section-lede" data-build="type">
-            Experience, research, and education—one step at a time.
+            Experience, research, and education: one step at a time.
           </p>
         </div>
         <span className="record-mark" data-build="pop" aria-hidden="true">
@@ -92,23 +92,21 @@ export default function RecordSection() {
           <div className="timeline-date" data-build="type">Jun 2026</div>
           <span className="timeline-node" data-build="pop" aria-hidden="true" />
           <div className="timeline-content">
-            <span className="timeline-type" data-build="type">EDUCATION / 01</span>
+            <span className="timeline-type" data-build="type">EDUCATION / 04</span>
             <h3 data-build="type">Bachelor of Science in Computer Science</h3>
             <p className="timeline-organization" data-build="type">
               Data Science track · University of Engineering &amp; Technology (UET)
               Mardan
             </p>
-            <p className="timeline-copy" data-build="type">Graduated · CGPA 3.20 / 4.00</p>
           </div>
         </article>
         <article className="timeline-entry">
           <div className="timeline-date" data-build="type">Jul 2022</div>
           <span className="timeline-node" data-build="pop" aria-hidden="true" />
           <div className="timeline-content">
-            <span className="timeline-type" data-build="type">EDUCATION / 02</span>
+            <span className="timeline-type" data-build="type">EDUCATION / 05</span>
             <h3 data-build="type">FSc / High School in Computer Science</h3>
             <p className="timeline-organization" data-build="type">Capital Degree College</p>
-            <p className="timeline-copy" data-build="type">860 / 1100 marks</p>
           </div>
         </article>
       </div>

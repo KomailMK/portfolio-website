@@ -13,6 +13,25 @@ function SectionLabel({ children }: { children: ReactNode }) {
 }
 
 export default function ContactSection() {
+  const handleEmailClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) {
+      return;
+    }
+    const isMobile =
+      typeof navigator !== "undefined" &&
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+    if (!isMobile) {
+      e.preventDefault();
+      window.open(
+        "https://mail.google.com/mail/?view=cm&fs=1&to=komikhalils091@gmail.com",
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
+  };
+
   return (
     <section className="section contact-section" id="contact" aria-labelledby="contact-heading">
       <SectionLabel>THE NEXT CHAPTER</SectionLabel>
@@ -29,6 +48,7 @@ export default function ContactSection() {
           <a
             className="button button-primary contact-button"
             href="mailto:komikhalils091@gmail.com"
+            onClick={handleEmailClick}
             data-build="pop"
           >
             <Mail size={16} aria-hidden="true" />
@@ -54,6 +74,7 @@ export default function ContactSection() {
         <div className="footer-links" data-build="pop">
           <a
             href="mailto:komikhalils091@gmail.com"
+            onClick={handleEmailClick}
             aria-label="Email Komail Ahmad Khalil"
             title="Email"
           >

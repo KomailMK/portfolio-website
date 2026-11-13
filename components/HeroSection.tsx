@@ -3,6 +3,25 @@ import React from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowDownRight, ArrowUpRight } from "lucide-react";
 export default function HeroSection() {
+  const handleEmailClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) {
+      return;
+    }
+    const isMobile =
+      typeof navigator !== "undefined" &&
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+    if (!isMobile) {
+      e.preventDefault();
+      window.open(
+        "https://mail.google.com/mail/?view=cm&fs=1&to=komikhalils091@gmail.com",
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
+  };
+
   return (
     <header className="hero pt-16 sm:pt-20" id="top">
       <div className="hero-noise" aria-hidden="true" />
@@ -48,7 +67,12 @@ export default function HeroSection() {
             <a className="button button-primary" href="#work" data-build="pop">
               View work <ArrowDownRight size={16} aria-hidden="true" />
             </a>
-            <a className="text-link" href="#contact" data-build="type">
+            <a
+              className="text-link"
+              href="mailto:komikhalils091@gmail.com"
+              onClick={handleEmailClick}
+              data-build="type"
+            >
               <span>Get in touch</span> <ArrowUpRight size={15} aria-hidden="true" />
             </a>
           </div>
