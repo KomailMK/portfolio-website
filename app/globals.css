@@ -621,6 +621,41 @@ html:not(.build-mode) .boot-loader {
   text-wrap: balance;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.section-heading-tech {
+  position: relative;
+  width: 100%;
+  height: clamp(62px, 9.8vw, 125px);
+  margin: 0;
+  display: block;
+}
+
+.contact-heading-tech {
+  position: relative;
+  width: 100%;
+  margin: 21px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tech-contact-line {
+  position: relative;
+  width: 100%;
+  height: clamp(48px, 7.2vw, 94px);
+}
+
 .section-lede {
   max-width: 520px;
   margin: 19px 0 0;

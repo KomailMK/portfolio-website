@@ -1,6 +1,7 @@
 "use client";
 import React, { type ReactNode } from "react";
 import { Sparkles } from "lucide-react";
+import TechText from "./TechText";
 const experience = [
   {
     period: "Jun 2026 — Present",
@@ -47,8 +48,37 @@ export default function RecordSection() {
       <div className="section-heading-row">
         <div className="section-heading-main">
           <SectionLabel>THE RECORD</SectionLabel>
-          <h2 className="section-heading" id="record-heading" data-build="type">
-            Built over time<span className="accent-period">.</span>
+          <h2 className="section-heading section-heading-tech" id="record-heading" data-build="type">
+            <span className="sr-only">Built over time.</span>
+            <TechText
+              text="Built over time."
+              textTransform="uppercase"
+              fontWeight={400}
+              fontSize={110}
+              reveal="letter"
+              dashLength={4}
+              dashGap={2}
+              specks={15}
+              intro="none"
+              introDuration={2}
+              clickKick
+              guides={false}
+              fontFamily=""
+              letterSpacing={-0.03}
+              color="#efeeeb"
+              accentColor="#ff3b2f"
+              reach={180}
+              softness={0.7}
+              lineStyle="dashed"
+              strokeWidth={1.5}
+              speed={1}
+              bounce={0.4}
+              selection
+              labels
+              align="left"
+              draggable
+              sweep
+            />
           </h2>
           <p className="section-lede" data-build="type">
             Experience, research, and education: one step at a time.

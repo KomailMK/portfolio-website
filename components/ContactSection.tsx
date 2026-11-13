@@ -2,6 +2,7 @@
 
 import React, { type ReactNode } from "react";
 import { Mail, Linkedin, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import TechText from "./TechText";
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
@@ -39,10 +40,70 @@ export default function ContactSection() {
         <div className="contact-card-glow" aria-hidden="true" />
         <div className="contact-copy">
           <span className="contact-overline" data-build="type">HAVE A GOOD CHALLENGE?</span>
-          <h2 id="contact-heading" data-build="type">
-            Let&apos;s make
-            <br />
-            something matter<span className="accent-period">.</span>
+          <h2 className="contact-heading-tech" id="contact-heading" data-build="type">
+            <span className="sr-only">Let&apos;s make something matter.</span>
+            <div className="tech-contact-line">
+              <TechText
+                text="Let's make"
+                textTransform="uppercase"
+                fontWeight={400}
+                fontSize={110}
+                reveal="letter"
+                dashLength={4}
+                dashGap={2}
+                specks={15}
+                intro="none"
+                introDuration={2}
+                clickKick
+                guides={false}
+                fontFamily=""
+                letterSpacing={-0.03}
+                color="#efeeeb"
+                accentColor="#ff3b2f"
+                reach={180}
+                softness={0.7}
+                lineStyle="dashed"
+                strokeWidth={1.5}
+                speed={1}
+                bounce={0.4}
+                selection
+                labels
+                align="left"
+                draggable
+                sweep
+              />
+            </div>
+            <div className="tech-contact-line">
+              <TechText
+                text="something matter."
+                textTransform="uppercase"
+                fontWeight={400}
+                fontSize={110}
+                reveal="letter"
+                dashLength={4}
+                dashGap={2}
+                specks={15}
+                intro="none"
+                introDuration={2}
+                clickKick
+                guides={false}
+                fontFamily=""
+                letterSpacing={-0.03}
+                color="#efeeeb"
+                accentColor="#ff3b2f"
+                reach={180}
+                softness={0.7}
+                lineStyle="dashed"
+                strokeWidth={1.5}
+                speed={1}
+                bounce={0.4}
+                selection
+                labels
+                align="left"
+                draggable
+                sweep
+              />
+            </div>
           </h2>
           <p data-build="type">Reach out for conversations about software, applied AI, and research.</p>
           <a

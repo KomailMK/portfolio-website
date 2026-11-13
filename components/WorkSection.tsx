@@ -1,6 +1,7 @@
 "use client";
 import React, { type ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
+import TechText from "./TechText";
 interface ProjectLink {
   label: string;
   url: string;
@@ -148,8 +149,37 @@ export default function WorkSection() {
       <div className="section-heading-row">
         <div className="section-heading-main">
           <SectionLabel>SELECTED WORK</SectionLabel>
-          <h2 className="section-heading" id="work-heading" data-build="type">
-            Work that ships<span className="accent-period">.</span>
+          <h2 className="section-heading section-heading-tech" id="work-heading" data-build="type">
+            <span className="sr-only">Work that ships.</span>
+            <TechText
+              text="Work that ships."
+              textTransform="uppercase"
+              fontWeight={400}
+              fontSize={110}
+              reveal="letter"
+              dashLength={4}
+              dashGap={2}
+              specks={15}
+              intro="none"
+              introDuration={2}
+              clickKick
+              guides={false}
+              fontFamily=""
+              letterSpacing={-0.03}
+              color="#efeeeb"
+              accentColor="#ff3b2f"
+              reach={180}
+              softness={0.7}
+              lineStyle="dashed"
+              strokeWidth={1.5}
+              speed={1}
+              bounce={0.4}
+              selection
+              labels
+              align="left"
+              draggable
+              sweep
+            />
           </h2>
           <p className="section-lede" data-build="type">
             Research and products built across healthcare, applied AI, and full-stack
