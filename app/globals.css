@@ -72,25 +72,20 @@ html.build-mode [data-build]:not([data-built="true"]):not(.build-reveal) {
   transition: opacity 36ms linear;
   transition-delay: calc(var(--char-index) * 11ms);
 }
-
 .build-typing .build-char {
   opacity: 1;
 }
-
 .build-finished .build-char {
   opacity: 1;
   transition: none;
   transition-delay: 0ms;
 }
-
 .build-wiping {
   animation: wipe-in 750ms cubic-bezier(0.19, 1, 0.22, 1) both;
 }
-
 .build-popping {
   animation: pop-in 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-
 .boot-loader {
   position: fixed;
   z-index: 80;
@@ -104,19 +99,16 @@ html.build-mode [data-build]:not([data-built="true"]):not(.build-reveal) {
   transition: opacity 320ms ease, visibility 320ms ease;
   visibility: hidden;
 }
-
 .boot-loader.is-active {
   opacity: 1;
   pointer-events: auto;
   visibility: visible;
 }
-
 html:not(.build-mode) .boot-loader {
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
 }
-
 .boot-loader-inner {
   display: flex;
   width: min(320px, 100%);
@@ -124,7 +116,6 @@ html:not(.build-mode) .boot-loader {
   align-items: flex-start;
   gap: 14px;
 }
-
 .boot-loader-eyebrow,
 .boot-loader-caption,
 .hero-toplink,
@@ -146,19 +137,16 @@ html:not(.build-mode) .boot-loader {
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
-
 .boot-loader-eyebrow {
   color: var(--accent);
   font-size: 10px;
 }
-
 .boot-loader-title {
   font-family: var(--font-anton), Impact, sans-serif;
   font-size: 31px;
   letter-spacing: -0.02em;
   text-transform: uppercase;
 }
-
 .boot-loader-track {
   position: relative;
   width: 100%;
@@ -166,7 +154,6 @@ html:not(.build-mode) .boot-loader {
   overflow: hidden;
   background: #28272a;
 }
-
 .boot-loader-progress {
   position: absolute;
   inset: 0;
@@ -175,14 +162,12 @@ html:not(.build-mode) .boot-loader {
   transform-origin: left center;
   animation: boot-progress 980ms cubic-bezier(0.5, 0, 0.3, 1) infinite alternate;
 }
-
 .boot-loader-caption {
   color: var(--muted);
   font-size: 9px;
   letter-spacing: 0.04em;
   text-transform: none;
 }
-
 .hero {
   position: relative;
   display: flex;
@@ -196,7 +181,6 @@ html:not(.build-mode) .boot-loader {
     radial-gradient(ellipse at 50% 70%, rgba(255, 59, 47, 0.04), transparent 49%),
     var(--background);
 }
-
 .hero-noise {
   position: absolute;
   z-index: -1;
@@ -205,7 +189,6 @@ html:not(.build-mode) .boot-loader {
   opacity: 0.09;
   pointer-events: none;
 }
-
 .hero-topline {
   position: relative;
   z-index: 5;
@@ -215,19 +198,16 @@ html:not(.build-mode) .boot-loader {
   justify-content: space-between;
   padding: 29px clamp(22px, 5.2vw, 84px);
 }
-
 .wordmark,
 .footer-brand {
   font-family: var(--font-anton), Impact, sans-serif;
   font-size: 22px;
   letter-spacing: -0.04em;
 }
-
 .wordmark > span:not(.reveal-word),
 .footer-brand > span:not(.reveal-word) {
   color: var(--accent);
 }
-
 .hero-toplink {
   display: inline-flex;
   align-items: center;
