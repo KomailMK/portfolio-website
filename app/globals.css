@@ -1,5 +1,4 @@
 @import "tailwindcss";
-
 :root {
   --background: #09090b;
   --surface: #0e0e10;
@@ -11,24 +10,20 @@
   --accent: #ff3b2f;
   --blue-wire: #63a9ff;
 }
-
 @property --spot-inner {
   syntax: "<length-percentage>";
   inherits: true;
   initial-value: 0px;
 }
-
 @property --spot-outer {
   syntax: "<length-percentage>";
   inherits: true;
   initial-value: 0px;
 }
-
 @layer base {
   * {
     box-sizing: border-box;
   }
-
   html {
     max-width: 100%;
     overflow-x: clip;
@@ -36,7 +31,6 @@
     scroll-padding-top: 82px;
     background: var(--background);
   }
-
   body {
     min-width: 320px;
     max-width: 100%;
@@ -48,38 +42,31 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-
   ::selection {
     background: var(--accent);
     color: #fff;
   }
-
   a {
     color: inherit;
     text-decoration: none;
   }
-
   button,
   a {
     -webkit-tap-highlight-color: transparent;
   }
-
   a:focus-visible,
   button:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 5px;
   }
-
   button:disabled {
     cursor: not-allowed;
     opacity: 0.5;
   }
 }
-
 html.build-mode [data-build]:not([data-built="true"]):not(.build-reveal) {
   visibility: hidden;
 }
-
 .build-char {
   opacity: 0;
   transition: opacity 36ms linear;

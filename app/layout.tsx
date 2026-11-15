@@ -50,7 +50,6 @@ export const metadata: Metadata = {
     apple: "/me.png",
   },
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -64,8 +63,7 @@ export default function RootLayout({
       style={{
         // ensure any --font-geist-sans consumers also match
         ["--font-geist-sans" as string]: "var(--font-geist)",
-      }}
-    >
+      }}>
       <head>
         <link rel="icon" type="image/png" href="/me.png" />
         <link rel="shortcut icon" type="image/png" href="/me.png" />
