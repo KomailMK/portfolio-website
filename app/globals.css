@@ -216,11 +216,9 @@ html:not(.build-mode) .boot-loader {
   font-size: 9px;
   transition: color 180ms ease;
 }
-
 .hero-toplink:hover {
   color: var(--accent);
 }
-
 .hero-giant {
   position: absolute;
   z-index: -1;
@@ -251,7 +249,6 @@ html:not(.build-mode) .boot-loader {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-
 .hero-giant::after {
   position: absolute;
   inset: 0;
@@ -279,7 +276,6 @@ html:not(.build-mode) .boot-loader {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-
 .hero-photo-glow {
   position: absolute;
   z-index: -1;
@@ -292,7 +288,6 @@ html:not(.build-mode) .boot-loader {
   filter: blur(17px);
   transform: translateX(-50%);
 }
-
 .hero-portrait {
   position: absolute;
   z-index: 0;
@@ -304,7 +299,6 @@ html:not(.build-mode) .boot-loader {
   transform: translateX(-50%);
   pointer-events: none;
 }
-
 .portrait-image {
   object-fit: contain;
   object-position: center bottom;
@@ -312,14 +306,12 @@ html:not(.build-mode) .boot-loader {
   mask-image: linear-gradient(to bottom, black 68%, rgba(0, 0, 0, 0.84) 83%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, black 68%, rgba(0, 0, 0, 0.84) 83%, transparent 100%);
 }
-
 .portrait-bottom-fade {
   position: absolute;
   inset: auto -15% -1px;
   height: 20%;
   background: linear-gradient(to bottom, transparent, var(--background) 94%);
 }
-
 .hero-content {
   position: relative;
   z-index: 2;
@@ -331,13 +323,11 @@ html:not(.build-mode) .boot-loader {
   gap: 8%;
   padding: 0 clamp(22px, 8.3vw, 142px) 75px;
 }
-
 .hero-intro {
   width: min(100%, 470px);
   align-self: center;
   padding-top: 37px;
 }
-
 .handwritten {
   position: relative;
   z-index: 5;
@@ -350,12 +340,10 @@ html:not(.build-mode) .boot-loader {
   transform: rotate(-4deg);
   transform-origin: left center;
 }
-
 .handwritten .split-parent > span {
   display: inline-block;
   line-height: 1;
 }
-
 .hero-name {
   position: relative;
   z-index: 2;
@@ -368,31 +356,25 @@ html:not(.build-mode) .boot-loader {
   text-transform: uppercase;
   text-wrap: balance;
 }
-
 .hero-name-line {
   display: block;
   width: fit-content;
   max-width: 100%;
 }
-
 .hero-name .hero-name-line > span {
   display: inline-block;
   line-height: 0.82;
 }
-
 .hero-name .split-char {
   letter-spacing: 0;
 }
-
 .hero-name .split-char + .split-char {
   margin-left: -0.045em;
 }
-
 .name-period,
 .accent-period {
   color: var(--accent);
 }
-
 .hero-role {
   margin: 20px 0 0;
   color: var(--accent);
@@ -400,12 +382,10 @@ html:not(.build-mode) .boot-loader {
   font-weight: 600;
   letter-spacing: 0.015em;
 }
-
 .hero-role > span:not(.reveal-word) {
   padding: 0 3px;
   color: #8d3935;
 }
-
 .hero-bio {
   max-width: 420px;
   margin: 18px 0 0;
@@ -413,7 +393,6 @@ html:not(.build-mode) .boot-loader {
   font-size: 15px;
   line-height: 1.75;
 }
-
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -421,7 +400,6 @@ html:not(.build-mode) .boot-loader {
   gap: 21px;
   margin-top: 25px;
 }
-
 .button {
   display: inline-flex;
   min-height: 46px;
@@ -439,29 +417,23 @@ html:not(.build-mode) .boot-loader {
     color 180ms ease,
     transform 180ms ease;
 }
-
 .button:hover {
   transform: translateY(-2px);
 }
-
 .button:active {
   transform: translateY(0) scale(0.98);
 }
-
 .button-primary {
   background: var(--accent);
   color: #fff;
 }
-
 .button-primary:hover {
   border-color: #ff746c;
   background: #e82f25;
 }
-
 .button-primary:focus-visible {
   outline-color: #fff;
 }
-
 .text-link {
   display: inline-flex;
   align-items: center;
@@ -470,11 +442,9 @@ html:not(.build-mode) .boot-loader {
   font-size: 11px;
   transition: color 180ms ease;
 }
-
 .text-link:hover {
   color: var(--accent);
 }
-
 .location-line,
 .contact-location {
   display: flex;
