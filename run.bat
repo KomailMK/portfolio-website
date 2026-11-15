@@ -1,3 +1,4 @@
+@REM  this file helps run the dev server automatically and opens the browser to the correct URL. It is intended to be run from the root of the project directory.
 @echo off
 title Dev Server
 
