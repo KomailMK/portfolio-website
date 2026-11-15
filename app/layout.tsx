@@ -1,33 +1,28 @@
 import type { Metadata } from "next";
 import { Anton, Geist, Geist_Mono, Caveat_Brush } from "next/font/google";
 import "./globals.css";
-
 const anton = Anton({
   variable: "--font-anton",
   subsets: ["latin"],
   weight: "400",
   display: "swap",
 });
-
 const geist = Geist({
   variable: "--font-geist",
   subsets: ["latin"],
   display: "swap",
 });
-
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
 });
-
 const caveatBrush = Caveat_Brush({
   variable: "--font-caveat-brush",
   subsets: ["latin"],
   weight: "400",
   display: "swap",
 });
-
 export const metadata: Metadata = {
   title: "Komail Ahmad Khalil | Software Engineer & AI Specialist",
   description:

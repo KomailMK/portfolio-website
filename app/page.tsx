@@ -8,7 +8,6 @@ import StackMarquee from "@/components/StackMarquee";
 import RecordSection from "@/components/RecordSection";
 import AboutSection from "@/components/AboutSection";
 import ContactSection from "@/components/ContactSection";
-
 export default function Home() {
   return (
     <CursorOrchestrator>
